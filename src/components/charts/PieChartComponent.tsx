@@ -40,24 +40,26 @@ export const PieChartComponent = ({ data, title, isCurrency = false }: PieChartC
               <Cell 
                 key={`cell-${index}`} 
                 fill={COLORS[index % COLORS.length]}
-                stroke="hsl(222, 47%, 8%)"
+                className="stroke-card"
                 strokeWidth={2}
               />
             ))}
           </Pie>
           <Tooltip 
             contentStyle={{ 
-              backgroundColor: 'hsl(222, 47%, 8%)', 
-              border: '1px solid hsl(222, 47%, 16%)',
+              backgroundColor: 'hsl(var(--popover))', 
+              border: '1px solid hsl(var(--border))',
               borderRadius: '8px',
-              color: 'hsl(210, 40%, 98%)'
+              color: 'hsl(var(--popover-foreground))',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
             }}
+            labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
             formatter={(value: number) => [formatValue(value), '']}
           />
           <Legend 
             verticalAlign="bottom" 
             height={36}
-            formatter={(value) => <span style={{ color: 'hsl(215, 20%, 55%)' }}>{value}</span>}
+            formatter={(value) => <span className="text-muted-foreground">{value}</span>}
           />
         </PieChart>
       </ResponsiveContainer>

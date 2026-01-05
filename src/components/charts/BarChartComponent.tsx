@@ -36,12 +36,12 @@ export const BarChartComponent = ({
           data={data} 
           layout={horizontal ? "vertical" : "horizontal"}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(222, 47%, 16%)" />
+          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
           {horizontal ? (
             <>
               <XAxis 
                 type="number" 
-                stroke="hsl(215, 20%, 55%)" 
+                className="text-muted-foreground"
                 fontSize={12}
                 tickLine={false}
                 tickFormatter={formatValue}
@@ -49,7 +49,7 @@ export const BarChartComponent = ({
               <YAxis 
                 type="category" 
                 dataKey="name" 
-                stroke="hsl(215, 20%, 55%)" 
+                className="text-muted-foreground"
                 fontSize={11}
                 tickLine={false}
                 width={100}
@@ -59,7 +59,7 @@ export const BarChartComponent = ({
             <>
               <XAxis 
                 dataKey="name" 
-                stroke="hsl(215, 20%, 55%)" 
+                className="text-muted-foreground"
                 fontSize={11}
                 tickLine={false}
                 angle={-45}
@@ -67,7 +67,7 @@ export const BarChartComponent = ({
                 height={80}
               />
               <YAxis 
-                stroke="hsl(215, 20%, 55%)" 
+                className="text-muted-foreground"
                 fontSize={12}
                 tickLine={false}
                 tickFormatter={formatValue}
@@ -76,11 +76,13 @@ export const BarChartComponent = ({
           )}
           <Tooltip 
             contentStyle={{ 
-              backgroundColor: 'hsl(222, 47%, 8%)', 
-              border: '1px solid hsl(222, 47%, 16%)',
+              backgroundColor: 'hsl(var(--popover))', 
+              border: '1px solid hsl(var(--border))',
               borderRadius: '8px',
-              color: 'hsl(210, 40%, 98%)'
+              color: 'hsl(var(--popover-foreground))',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
             }}
+            labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
             formatter={(value: number) => [formatValue(value), '']}
           />
           <Bar dataKey={dataKey} radius={[4, 4, 0, 0]}>
