@@ -1,12 +1,26 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { FileUpload } from "@/components/FileUpload";
+import { Dashboard } from "@/components/Dashboard";
+import { SalesRecord } from "@/types/sales";
 
 const Index = () => {
+  const [data, setData] = useState<SalesRecord[]>([]);
+
+  const handleDataLoaded = (records: SalesRecord[]) => {
+    setData(records);
+  };
+
+  const handleReset = () => {
+    setData([]);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      {data.length === 0 ? (
+        <FileUpload onDataLoaded={handleDataLoaded} />
+      ) : (
+        <Dashboard data={data} onReset={handleReset} />
+      )}
     </div>
   );
 };
