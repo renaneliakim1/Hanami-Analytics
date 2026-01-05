@@ -1,37 +1,99 @@
 import { useCallback, useState } from "react";
-import { Upload, FileSpreadsheet, CheckCircle2 } from "lucide-react";
-import { parseCSV } from "@/utils/csvParser";
+import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle } from "lucide-react";
 import { SalesRecord } from "@/types/sales";
 
 interface FileUploadProps {
   onDataLoaded: (data: SalesRecord[]) => void;
+  onError?: (error: string) => void;
 }
 
-export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+export const FileUpload = ({ onDataLoaded, onError }: FileUploadProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFile = useCallback(async (file: File) => {
-    if (!file.name.endsWith('.csv')) {
-      alert('Por favor, selecione um arquivo CSV');
+    const validExtensions = ['.csv', '.xlsx', '.xls'];
+    const isValid = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+    
+    if (!isValid) {
+      const errorMsg = 'Por favor, selecione um arquivo CSV, XLSX ou XLS';
+      setError(errorMsg);
+      onError?.(errorMsg);
       return;
     }
 
     setIsLoading(true);
     setFileName(file.name);
+    setError(null);
 
     try {
-      const text = await file.text();
-      const records = parseCSV(text);
+      // Enviar arquivo para o backend
+      const formData = new FormData();
+      formData.append('file', file);
+
+      let response: Response;
+      try {
+        response = await fetch(`${API_URL}/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+      } catch (fetchError) {
+        throw new Error(
+          `O sistema está temporariamente indisponível. Por favor, tente novamente em alguns momentos.`
+        );
+      }
+
+      if (!response.ok) {
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || `Erro ao processar arquivo`);
+        } catch {
+          throw new Error(
+            `Erro ao processar o arquivo. Por favor, tente novamente.`
+          );
+        }
+      }
+
+      const uploadResult = await response.json();
+      console.log('✅ Arquivo enviado com sucesso:', uploadResult);
+
+      // Carregar dados do backend
+      let dataResponse: Response;
+      try {
+        dataResponse = await fetch(`${API_URL}/sales?limit=10000`);
+      } catch (fetchError) {
+        throw new Error(
+          `O sistema está temporariamente indisponível. Por favor, tente novamente em alguns momentos.`
+        );
+      }
+
+      if (!dataResponse.ok) {
+        throw new Error(
+          `Erro ao carregar os dados. Por favor, tente novamente.`
+        );
+      }
+
+      const dataResult = await dataResponse.json();
+      const records: SalesRecord[] = dataResult.data.map((item: any) => ({
+        id: item.id || item.id_transacao || Math.random(),
+        ...item,
+      }));
+
       onDataLoaded(records);
+      console.log('✅ Dados carregados do backend');
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Erro desconhecido ao processar arquivo';
       console.error('Erro ao processar arquivo:', error);
-      alert('Erro ao processar o arquivo CSV');
+      setError(errorMsg);
+      onError?.(errorMsg);
     } finally {
       setIsLoading(false);
     }
-  }, [onDataLoaded]);
+  }, [onDataLoaded, onError]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -53,7 +115,7 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
   const handleClick = useCallback(() => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.csv';
+    input.accept = '.csv,.xlsx,.xls';
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) handleFile(file);
@@ -66,12 +128,22 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
       <div className="w-full max-w-2xl animate-fade-in">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">
-            <span className="text-gradient">Sales Analytics</span>
+            <span className="text-gradient">Hanami Analytics</span>
           </h1>
           <p className="text-muted-foreground text-lg">
-            Faça upload do seu arquivo CSV para visualizar os dados de vendas
+            Faça upload do seu arquivo CSV, XLSX ou XLS para visualizar os dados
           </p>
         </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-100 border border-red-400 rounded-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-red-800 font-medium">Erro ao processar</p>
+              <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          </div>
+        )}
 
         <div
           onClick={handleClick}
@@ -84,7 +156,7 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
             {isLoading ? (
               <>
                 <div className="w-16 h-16 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
-                <p className="text-lg text-muted-foreground">Processando...</p>
+                <p className="text-lg text-muted-foreground">Enviando e processando...</p>
               </>
             ) : fileName ? (
               <>
@@ -103,7 +175,7 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
                 </div>
                 <div className="text-center">
                   <p className="text-lg font-medium text-foreground mb-2">
-                    Arraste seu arquivo CSV aqui
+                    Arraste seu arquivo aqui
                   </p>
                   <p className="text-sm text-muted-foreground">
                     ou clique para selecionar
@@ -111,7 +183,7 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Upload className="w-4 h-4" />
-                  <span>Suporta arquivos .csv</span>
+                  <span>Suporta .csv, .xlsx e .xls</span>
                 </div>
               </>
             )}

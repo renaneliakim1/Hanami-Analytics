@@ -14,7 +14,7 @@ export const PaymentsTab = ({ formaPagamento, parcelamentoMedio }: PaymentsTabPr
 
   const pagamentoValorMedio = formaPagamento.map(p => ({
     name: p.name,
-    value: p.valorMedio || 0
+    value: p.valor_medio || 0
   }));
 
   const paymentColors = [

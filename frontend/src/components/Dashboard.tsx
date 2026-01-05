@@ -2,6 +2,7 @@ import { BarChart3, TrendingUp, Package, Users, CreditCard, Truck, Upload, Print
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SalesRecord } from "@/types/sales";
 import { useSalesData } from "@/hooks/useSalesData";
+import { useApiReport } from "@/hooks/useApiReport";
 import { OverviewTab } from "./dashboard/OverviewTab";
 import { SalesTab } from "./dashboard/SalesTab";
 import { ProductsTab } from "./dashboard/ProductsTab";
@@ -17,7 +18,48 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({ data, onReset }: DashboardProps) => {
+  // Usar dados locais se disponíveis, senão carregar da API
   const salesData = useSalesData(data);
+  const apiData = useApiReport();
+
+  // Priorizar dados da API se carregados, senão usar dados locais
+  const kpis = apiData.kpis ? {
+    faturamentoTotal: apiData.kpis.faturamento_total || 0,
+    lucroTotal: apiData.kpis.lucro_total || 0,
+    quantidadeVendas: apiData.kpis.total_vendas || 0,
+    clientesUnicos: apiData.kpis.clientes_unicos || 0,
+    ticketMedio: apiData.kpis.ticket_medio || 0,
+    avaliacaoMedia: apiData.kpis.avaliacao_media || 0,
+  } : salesData.kpis;
+
+  const vendasPorMes = apiData.monthlySales.length > 0 
+    ? apiData.monthlySales.map(m => ({
+        name: m.mes,
+        faturamento: m.faturamento || 0,
+        lucro: m.lucro || 0,
+        vendas: m.vendas || 0
+      }))
+    : salesData.vendasPorMes;
+
+  const vendasPorCategoria = apiData.salesByCategory.length > 0
+    ? apiData.salesByCategory
+    : salesData.vendasPorCategoria;
+
+  const produtosMaisVendidos = apiData.topProducts.length > 0
+    ? apiData.topProducts
+    : salesData.produtosMaisVendidos;
+
+  const clientesPorGenero = apiData.customersByGender.length > 0
+    ? apiData.customersByGender
+    : salesData.clientesPorGenero;
+
+  const vendasPorEstado = apiData.salesByState.length > 0
+    ? apiData.salesByState
+    : salesData.vendasPorEstado;
+
+  const formaPagamento = apiData.paymentMethods.length > 0
+    ? apiData.paymentMethods
+    : salesData.formaPagamento;
 
   const handlePrint = () => {
     window.print();
@@ -43,6 +85,7 @@ export const Dashboard = ({ data, onReset }: DashboardProps) => {
           <p className="text-muted-foreground">
             {formatNumber(data.length)} registros carregados
           </p>
+          {apiData.loading && <p className="text-sm text-blue-600 mt-1">📡 Carregando dados do servidor...</p>}
         </div>
         <div className="flex items-center gap-3 no-print">
           <button
@@ -83,35 +126,35 @@ export const Dashboard = ({ data, onReset }: DashboardProps) => {
 
         <TabsContent value="overview">
           <OverviewTab
-            kpis={salesData.kpis}
-            vendasPorMes={salesData.vendasPorMes}
-            vendasPorCategoria={salesData.vendasPorCategoria}
+            kpis={kpis}
+            vendasPorMes={vendasPorMes}
+            vendasPorCategoria={vendasPorCategoria}
           />
         </TabsContent>
 
         <TabsContent value="sales">
-          <SalesTab vendasPorMes={salesData.vendasPorMes} />
+          <SalesTab vendasPorMes={vendasPorMes} />
         </TabsContent>
 
         <TabsContent value="products">
           <ProductsTab
-            produtosMaisVendidos={salesData.produtosMaisVendidos}
-            vendasPorCategoria={salesData.vendasPorCategoria}
+            produtosMaisVendidos={produtosMaisVendidos}
+            vendasPorCategoria={vendasPorCategoria}
             avaliacaoPorProduto={salesData.avaliacaoPorProduto}
           />
         </TabsContent>
 
         <TabsContent value="customers">
           <CustomersTab
-            clientesPorGenero={salesData.clientesPorGenero}
+            clientesPorGenero={clientesPorGenero}
             clientesPorIdade={salesData.clientesPorIdade}
-            vendasPorEstado={salesData.vendasPorEstado}
+            vendasPorEstado={vendasPorEstado}
           />
         </TabsContent>
 
         <TabsContent value="payments">
           <PaymentsTab
-            formaPagamento={salesData.formaPagamento}
+            formaPagamento={formaPagamento}
             parcelamentoMedio={salesData.parcelamentoMedio}
           />
         </TabsContent>
