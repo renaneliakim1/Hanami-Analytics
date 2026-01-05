@@ -3,7 +3,7 @@ import { SalesRecord, KPIData } from "@/types/sales";
 
 export const useSalesData = (data: SalesRecord[]) => {
   const kpis = useMemo((): KPIData => {
-    if (data.length === 0) {
+    if (!data || data.length === 0) {
       return {
         faturamentoTotal: 0,
         lucroTotal: 0,
@@ -14,12 +14,15 @@ export const useSalesData = (data: SalesRecord[]) => {
       };
     }
 
-    const faturamentoTotal = data.reduce((sum, r) => sum + r.valor_total, 0);
-    const lucroTotal = data.reduce((sum, r) => sum + r.lucro, 0);
+    const faturamentoTotal = data.reduce((sum, r) => sum + (r.valor_total || 0), 0);
+    const lucroTotal = data.reduce((sum, r) => sum + (r.lucro || 0), 0);
     const quantidadeVendas = data.length;
-    const clientesUnicos = new Set(data.map(r => r.cliente_id)).size;
-    const ticketMedio = faturamentoTotal / quantidadeVendas;
-    const avaliacaoMedia = data.reduce((sum, r) => sum + r.avaliacao_produto, 0) / quantidadeVendas;
+    const clientesUnicos = new Set(data.map(r => r.cliente_id).filter(Boolean)).size;
+    const ticketMedio = quantidadeVendas > 0 ? faturamentoTotal / quantidadeVendas : 0;
+    const avaliacoes = data.filter(r => r.avaliacao_produto > 0);
+    const avaliacaoMedia = avaliacoes.length > 0 
+      ? avaliacoes.reduce((sum, r) => sum + r.avaliacao_produto, 0) / avaliacoes.length 
+      : 0;
 
     return {
       faturamentoTotal,
@@ -32,21 +35,43 @@ export const useSalesData = (data: SalesRecord[]) => {
   }, [data]);
 
   const vendasPorMes = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    
     const grouped: Record<string, { faturamento: number; lucro: number; vendas: number }> = {};
     
     data.forEach(r => {
-      const date = new Date(r.data_venda);
+      if (!r.data_venda) return;
+      
+      let date: Date;
+      // Try different date formats
+      if (r.data_venda.includes('/')) {
+        const parts = r.data_venda.split('/');
+        if (parts.length === 3) {
+          // DD/MM/YYYY or MM/DD/YYYY
+          const day = parseInt(parts[0]);
+          const month = parseInt(parts[1]);
+          const year = parseInt(parts[2]);
+          date = new Date(year, month - 1, day);
+        } else {
+          return;
+        }
+      } else {
+        date = new Date(r.data_venda);
+      }
+      
+      if (isNaN(date.getTime())) return;
+      
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       
       if (!grouped[key]) {
         grouped[key] = { faturamento: 0, lucro: 0, vendas: 0 };
       }
-      grouped[key].faturamento += r.valor_total;
-      grouped[key].lucro += r.lucro;
+      grouped[key].faturamento += r.valor_total || 0;
+      grouped[key].lucro += r.lucro || 0;
       grouped[key].vendas += 1;
     });
 
-    return Object.entries(grouped)
+    const result = Object.entries(grouped)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([month, values]) => ({
         name: month,
@@ -54,17 +79,23 @@ export const useSalesData = (data: SalesRecord[]) => {
         lucro: values.lucro,
         vendas: values.vendas,
       }));
+
+    console.log('Vendas por mês:', result);
+    return result;
   }, [data]);
 
   const produtosMaisVendidos = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    
     const grouped: Record<string, { quantidade: number; lucro: number; nome: string }> = {};
     
     data.forEach(r => {
-      if (!grouped[r.produto_id]) {
-        grouped[r.produto_id] = { quantidade: 0, lucro: 0, nome: r.nome_produto };
+      const key = r.produto_id || r.nome_produto || 'Desconhecido';
+      if (!grouped[key]) {
+        grouped[key] = { quantidade: 0, lucro: 0, nome: r.nome_produto || key };
       }
-      grouped[r.produto_id].quantidade += r.quantidade;
-      grouped[r.produto_id].lucro += r.lucro;
+      grouped[key].quantidade += r.quantidade || 1;
+      grouped[key].lucro += r.lucro || 0;
     });
 
     return Object.values(grouped)
@@ -74,22 +105,31 @@ export const useSalesData = (data: SalesRecord[]) => {
   }, [data]);
 
   const vendasPorCategoria = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    
     const grouped: Record<string, number> = {};
     
     data.forEach(r => {
-      grouped[r.categoria_produto] = (grouped[r.categoria_produto] || 0) + r.valor_total;
+      const categoria = r.categoria_produto || 'Outros';
+      grouped[categoria] = (grouped[categoria] || 0) + (r.valor_total || 0);
     });
 
-    return Object.entries(grouped)
+    const result = Object.entries(grouped)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
+
+    console.log('Vendas por categoria:', result);
+    return result;
   }, [data]);
 
   const clientesPorGenero = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    
     const grouped: Record<string, number> = {};
     
     data.forEach(r => {
-      grouped[r.genero_cliente] = (grouped[r.genero_cliente] || 0) + 1;
+      const genero = r.genero_cliente || 'Não informado';
+      grouped[genero] = (grouped[genero] || 0) + 1;
     });
 
     return Object.entries(grouped)
@@ -97,6 +137,8 @@ export const useSalesData = (data: SalesRecord[]) => {
   }, [data]);
 
   const clientesPorIdade = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    
     const faixas: Record<string, number> = {
       '18-25': 0,
       '26-35': 0,
@@ -106,7 +148,8 @@ export const useSalesData = (data: SalesRecord[]) => {
     };
     
     data.forEach(r => {
-      const idade = r.idade_cliente;
+      const idade = r.idade_cliente || 0;
+      if (idade <= 0) return;
       if (idade <= 25) faixas['18-25']++;
       else if (idade <= 35) faixas['26-35']++;
       else if (idade <= 45) faixas['36-45']++;
@@ -114,47 +157,64 @@ export const useSalesData = (data: SalesRecord[]) => {
       else faixas['56+']++;
     });
 
-    return Object.entries(faixas).map(([name, value]) => ({ name, value }));
+    return Object.entries(faixas)
+      .filter(([_, value]) => value > 0)
+      .map(([name, value]) => ({ name, value }));
   }, [data]);
 
   const vendasPorEstado = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    
     const grouped: Record<string, number> = {};
     
     data.forEach(r => {
-      grouped[r.estado_cliente] = (grouped[r.estado_cliente] || 0) + r.valor_total;
+      const estado = r.estado_cliente || 'Não informado';
+      grouped[estado] = (grouped[estado] || 0) + (r.valor_total || 0);
     });
 
-    return Object.entries(grouped)
+    const result = Object.entries(grouped)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 10);
+
+    console.log('Vendas por estado:', result);
+    return result;
   }, [data]);
 
   const formaPagamento = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    
     const grouped: Record<string, { count: number; total: number }> = {};
     
     data.forEach(r => {
-      if (!grouped[r.forma_pagamento]) {
-        grouped[r.forma_pagamento] = { count: 0, total: 0 };
+      const forma = r.forma_pagamento || 'Não informado';
+      if (!grouped[forma]) {
+        grouped[forma] = { count: 0, total: 0 };
       }
-      grouped[r.forma_pagamento].count++;
-      grouped[r.forma_pagamento].total += r.valor_total;
+      grouped[forma].count++;
+      grouped[forma].total += r.valor_total || 0;
     });
 
-    return Object.entries(grouped)
+    const result = Object.entries(grouped)
       .map(([name, values]) => ({
         name,
         quantidade: values.count,
-        valorMedio: values.total / values.count,
+        valorMedio: values.count > 0 ? values.total / values.count : 0,
       }))
       .sort((a, b) => b.quantidade - a.quantidade);
+
+    console.log('Forma pagamento:', result);
+    return result;
   }, [data]);
 
   const parcelamentoMedio = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    
     const grouped: Record<number, number> = {};
     
     data.forEach(r => {
-      grouped[r.parcelas] = (grouped[r.parcelas] || 0) + 1;
+      const parcelas = r.parcelas || 1;
+      grouped[parcelas] = (grouped[parcelas] || 0) + 1;
     });
 
     return Object.entries(grouped)
@@ -163,10 +223,13 @@ export const useSalesData = (data: SalesRecord[]) => {
   }, [data]);
 
   const statusEntrega = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    
     const grouped: Record<string, number> = {};
     
     data.forEach(r => {
-      grouped[r.status_entrega] = (grouped[r.status_entrega] || 0) + 1;
+      const status = r.status_entrega || 'Não informado';
+      grouped[status] = (grouped[status] || 0) + 1;
     });
 
     return Object.entries(grouped)
@@ -174,23 +237,29 @@ export const useSalesData = (data: SalesRecord[]) => {
   }, [data]);
 
   const tempoEntregaMedia = useMemo(() => {
-    if (data.length === 0) return 0;
-    return data.reduce((sum, r) => sum + r.tempo_entrega_dias, 0) / data.length;
+    if (!data || data.length === 0) return 0;
+    const validData = data.filter(r => r.tempo_entrega_dias > 0);
+    if (validData.length === 0) return 0;
+    return validData.reduce((sum, r) => sum + r.tempo_entrega_dias, 0) / validData.length;
   }, [data]);
 
   const avaliacaoPorProduto = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    
     const grouped: Record<string, { total: number; count: number; nome: string }> = {};
     
     data.forEach(r => {
-      if (!grouped[r.produto_id]) {
-        grouped[r.produto_id] = { total: 0, count: 0, nome: r.nome_produto };
+      if (!r.avaliacao_produto || r.avaliacao_produto <= 0) return;
+      const key = r.produto_id || r.nome_produto || 'Desconhecido';
+      if (!grouped[key]) {
+        grouped[key] = { total: 0, count: 0, nome: r.nome_produto || key };
       }
-      grouped[r.produto_id].total += r.avaliacao_produto;
-      grouped[r.produto_id].count++;
+      grouped[key].total += r.avaliacao_produto;
+      grouped[key].count++;
     });
 
     return Object.values(grouped)
-      .map(p => ({ name: p.nome, avaliacao: p.total / p.count }))
+      .map(p => ({ name: p.nome, avaliacao: p.count > 0 ? p.total / p.count : 0 }))
       .sort((a, b) => a.avaliacao - b.avaliacao)
       .slice(0, 10);
   }, [data]);
