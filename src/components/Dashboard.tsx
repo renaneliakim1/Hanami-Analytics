@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { BarChart3, TrendingUp, Package, Users, CreditCard, Truck, Upload } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SalesRecord } from "@/types/sales";
@@ -9,6 +8,7 @@ import { ProductsTab } from "./dashboard/ProductsTab";
 import { CustomersTab } from "./dashboard/CustomersTab";
 import { PaymentsTab } from "./dashboard/PaymentsTab";
 import { LogisticsTab } from "./dashboard/LogisticsTab";
+import { ThemeToggle } from "./ThemeToggle";
 import { formatNumber } from "@/utils/csvParser";
 
 interface DashboardProps {
@@ -40,13 +40,16 @@ export const Dashboard = ({ data, onReset }: DashboardProps) => {
             {formatNumber(data.length)} registros carregados
           </p>
         </div>
-        <button
-          onClick={onReset}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors text-sm font-medium"
-        >
-          <Upload className="w-4 h-4" />
-          Novo Upload
-        </button>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <button
+            onClick={onReset}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors text-sm font-medium"
+          >
+            <Upload className="w-4 h-4" />
+            Novo Upload
+          </button>
+        </div>
       </header>
 
       {/* Tabs */}
