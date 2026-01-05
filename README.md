@@ -1,4 +1,4 @@
-# Analyze Joy Hub
+# Hanami Analytics
 
 ## Project info
 
