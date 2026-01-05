@@ -34,7 +34,7 @@ export const Dashboard = ({ data, onReset }: DashboardProps) => {
       <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold mb-2">
-            <span className="text-gradient">Sales Analytics</span>
+            <span className="text-gradient">Hanami Analytics</span>
           </h1>
           <p className="text-muted-foreground">
             {formatNumber(data.length)} registros carregados
@@ -54,8 +54,9 @@ export const Dashboard = ({ data, onReset }: DashboardProps) => {
 
       {/* Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="glass-card p-1 inline-flex w-full lg:w-auto overflow-x-auto">
-          {tabs.map((tab) => (
+        <div className="flex justify-center">
+          <TabsList className="glass-card p-1 inline-flex">
+            {tabs.map((tab) => (
             <TabsTrigger
               key={tab.id}
               value={tab.id}
@@ -66,6 +67,7 @@ export const Dashboard = ({ data, onReset }: DashboardProps) => {
             </TabsTrigger>
           ))}
         </TabsList>
+        </div>
 
         <TabsContent value="overview">
           <OverviewTab

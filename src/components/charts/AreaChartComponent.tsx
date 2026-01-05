@@ -1,14 +1,40 @@
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { formatCurrency } from "@/utils/csvParser";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { formatCurrency, formatNumber } from "@/utils/csvParser";
 
 interface AreaChartComponentProps {
   data: any[];
   title: string;
   dataKey: string;
   color?: string;
+  isCurrency?: boolean;
 }
 
-export const AreaChartComponent = ({ data, title, dataKey, color = "hsl(199, 89%, 48%)" }: AreaChartComponentProps) => {
+export const AreaChartComponent = ({ data, title, dataKey, color = "hsl(199, 89%, 48%)", isCurrency = true }: AreaChartComponentProps) => {
+  const formatValue = isCurrency ? formatCurrency : formatNumber;
+
+  const getDataLabel = (key: string) => {
+    const labels: Record<string, string> = {
+      faturamento: 'Faturamento',
+      lucro: 'Lucro',
+      vendas: 'Vendas'
+    };
+    return labels[key] || key;
+  };
+
+  // Check if we have valid data
+  const hasData = data && data.length > 0;
+
+  if (!hasData) {
+    return (
+      <div className="chart-container h-[400px]">
+        <h3 className="text-lg font-semibold mb-6">{title}</h3>
+        <div className="flex items-center justify-center h-[85%]">
+          <p className="text-muted-foreground">Nenhum dado disponível</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="chart-container h-[400px]">
       <h3 className="text-lg font-semibold mb-6">{title}</h3>
@@ -31,7 +57,7 @@ export const AreaChartComponent = ({ data, title, dataKey, color = "hsl(199, 89%
             className="text-muted-foreground"
             fontSize={12}
             tickLine={false}
-            tickFormatter={(value) => formatCurrency(value)}
+            tickFormatter={(value) => formatValue(value)}
           />
           <Tooltip 
             contentStyle={{ 
@@ -39,10 +65,20 @@ export const AreaChartComponent = ({ data, title, dataKey, color = "hsl(199, 89%
               border: '1px solid hsl(var(--border))',
               borderRadius: '8px',
               color: 'hsl(var(--popover-foreground))',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              padding: '12px'
             }}
-            labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
-            formatter={(value: number) => [formatCurrency(value), '']}
+            labelStyle={{ 
+              color: 'hsl(var(--popover-foreground))',
+              fontWeight: 'bold',
+              marginBottom: '4px'
+            }}
+            itemStyle={{
+              color: 'hsl(var(--popover-foreground))'
+            }}
+            formatter={(value: number) => [formatValue(value), getDataLabel(dataKey)]}
+            cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: '5 5' }}
+            animationDuration={200}
           />
           <Area 
             type="monotone" 
@@ -50,6 +86,9 @@ export const AreaChartComponent = ({ data, title, dataKey, color = "hsl(199, 89%
             stroke={color} 
             strokeWidth={2}
             fill={`url(#gradient-${dataKey})`}
+            activeDot={{ r: 6, strokeWidth: 2, stroke: color }}
+            isAnimationActive={true}
+            animationDuration={1000}
           />
         </AreaChart>
       </ResponsiveContainer>

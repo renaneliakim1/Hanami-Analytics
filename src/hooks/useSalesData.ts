@@ -73,12 +73,17 @@ export const useSalesData = (data: SalesRecord[]) => {
 
     const result = Object.entries(grouped)
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([month, values]) => ({
-        name: month,
-        faturamento: values.faturamento,
-        lucro: values.lucro,
-        vendas: values.vendas,
-      }));
+      .map(([month, values]) => {
+        const [year, monthNum] = month.split('-');
+        const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        const monthName = monthNames[parseInt(monthNum) - 1];
+        return {
+          name: `${monthName}/${year}`,
+          faturamento: values.faturamento,
+          lucro: values.lucro,
+          vendas: values.vendas,
+        };
+      });
 
     console.log('Vendas por mês:', result);
     return result;

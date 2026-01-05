@@ -26,6 +26,7 @@ export const SalesTab = ({ vendasPorMes }: SalesTabProps) => {
         title="Quantidade de Vendas por Mês"
         dataKey="vendas"
         color="hsl(38, 92%, 50%)"
+        isCurrency={false}
       />
     </div>
   );

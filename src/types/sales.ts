@@ -22,6 +22,8 @@ export interface SalesRecord {
   status_entrega: string;
   tempo_entrega_dias: number;
   avaliacao_produto: number;
+  subtotal?: number;
+  margem_lucro?: number;
 }
 
 export interface KPIData {

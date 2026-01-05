@@ -60,11 +60,18 @@ export const parseCSV = (text: string): SalesRecord[] => {
     'valortotal': 'valor_total',
     'total': 'valor_total',
     'valor': 'valor_total',
+    'valor_final': 'valor_total',
+    'valorfinal': 'valor_total',
+    'subtotal': 'subtotal',
     'lucro': 'lucro',
     'margem': 'lucro',
+    'margem_lucro': 'margem_lucro',
+    'margemlucro': 'margem_lucro',
     'desconto_aplicado': 'desconto_aplicado',
     'descontoaplicado': 'desconto_aplicado',
     'desconto': 'desconto_aplicado',
+    'desconto_valor': 'desconto_aplicado',
+    'descontovalor': 'desconto_aplicado',
     'forma_pagamento': 'forma_pagamento',
     'formapagamento': 'forma_pagamento',
     'pagamento': 'forma_pagamento',
@@ -99,8 +106,8 @@ export const parseCSV = (text: string): SalesRecord[] => {
 
   const numericFields = [
     'idade_cliente', 'renda_estimada', 'preco_unitario', 'custo_produto',
-    'quantidade', 'valor_total', 'lucro', 'desconto_aplicado',
-    'parcelas', 'tempo_entrega_dias', 'avaliacao_produto'
+    'quantidade', 'valor_total', 'lucro', 'desconto_aplicado', 'subtotal',
+    'parcelas', 'tempo_entrega_dias', 'avaliacao_produto', 'margem_lucro'
   ];
 
   for (let i = 1; i < lines.length; i++) {
@@ -121,6 +128,16 @@ export const parseCSV = (text: string): SalesRecord[] => {
         record[field] = value;
       }
     });
+
+    // Calcular lucro se temos margem_lucro e valor_total
+    if (record.margem_lucro && record.valor_total && !record.lucro) {
+      record.lucro = record.valor_total * record.margem_lucro;
+    }
+    
+    // Ou calcular lucro a partir de subtotal e custo
+    if (!record.lucro && record.subtotal && record.custo_produto && record.quantidade) {
+      record.lucro = record.subtotal - (record.custo_produto * record.quantidade);
+    }
 
     // Set defaults for missing fields
     record.id_transacao = record.id_transacao || `T${i}`;
