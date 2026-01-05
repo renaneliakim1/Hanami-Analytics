@@ -1,4 +1,4 @@
-import { BarChart3, TrendingUp, Package, Users, CreditCard, Truck, Upload } from "lucide-react";
+import { BarChart3, TrendingUp, Package, Users, CreditCard, Truck, Upload, Printer } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SalesRecord } from "@/types/sales";
 import { useSalesData } from "@/hooks/useSalesData";
@@ -18,6 +18,10 @@ interface DashboardProps {
 
 export const Dashboard = ({ data, onReset }: DashboardProps) => {
   const salesData = useSalesData(data);
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   const tabs = [
     { id: "overview", label: "Visão Geral", icon: BarChart3 },
@@ -40,7 +44,15 @@ export const Dashboard = ({ data, onReset }: DashboardProps) => {
             {formatNumber(data.length)} registros carregados
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 no-print">
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent hover:bg-accent/80 transition-colors text-sm font-medium text-accent-foreground"
+            title="Imprimir relatório"
+          >
+            <Printer className="w-4 h-4" />
+            Imprimir
+          </button>
           <ThemeToggle />
           <button
             onClick={onReset}
