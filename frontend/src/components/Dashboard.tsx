@@ -12,16 +12,17 @@ import { LogisticsTab } from "./dashboard/LogisticsTab";
 import { DateRangePicker } from "./DateRangePicker";
 import { ThemeToggle } from "./ThemeToggle";
 import { formatNumber, formatCurrency } from "@/utils/csvParser";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface DashboardProps {
   data: SalesRecord[];
   onReset: () => void;
+  initialDateRange?: { startDate: string; endDate: string } | null;
 }
 
-export const Dashboard = ({ data, onReset }: DashboardProps) => {
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
+export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) => {
+  const [startDate, setStartDate] = useState<string>(initialDateRange?.startDate || "");
+  const [endDate, setEndDate] = useState<string>(initialDateRange?.endDate || "");
   
   // Usar dados locais se disponíveis, senão carregar da API
   const salesData = useSalesData(data);
@@ -163,10 +164,14 @@ export const Dashboard = ({ data, onReset }: DashboardProps) => {
 
         {/* Date Range Picker */}
         <div className="mb-6 no-print">
-          <DateRangePicker onDateChange={(start, end) => {
-            setStartDate(start);
-            setEndDate(end);
-          }} />
+          <DateRangePicker 
+            onDateChange={(start, end) => {
+              setStartDate(start);
+              setEndDate(end);
+            }}
+            initialStartDate={startDate}
+            initialEndDate={endDate}
+          />
         </div>
 
         <TabsContent value="overview">

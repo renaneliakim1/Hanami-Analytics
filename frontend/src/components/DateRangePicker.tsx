@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar as CalendarIcon, X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -8,14 +8,31 @@ import { ptBR } from "date-fns/locale";
 
 interface DateRangePickerProps {
   onDateChange: (startDate: string, endDate: string) => void;
+  initialStartDate?: string;
+  initialEndDate?: string;
 }
 
-export const DateRangePicker = ({ onDateChange }: DateRangePickerProps) => {
+export const DateRangePicker = ({ onDateChange, initialStartDate, initialEndDate }: DateRangePickerProps) => {
+  // Converter strings de data YYYY-MM-DD para Date
+  const parseDate = (dateStr?: string): Date => {
+    if (!dateStr) return new Date();
+    try {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      }
+    } catch (e) {
+      console.error('Erro ao fazer parse da data:', dateStr);
+    }
+    return new Date();
+  };
+
   const today = new Date();
-  const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const defaultStart = initialStartDate ? parseDate(initialStartDate) : new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const defaultEnd = initialEndDate ? parseDate(initialEndDate) : today;
   
-  const [startDate, setStartDate] = useState<Date>(thirtyDaysAgo);
-  const [endDate, setEndDate] = useState<Date>(today);
+  const [startDate, setStartDate] = useState<Date>(defaultStart);
+  const [endDate, setEndDate] = useState<Date>(defaultEnd);
   const [isOpen, setIsOpen] = useState(false);
 
   // Presets de datas

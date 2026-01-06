@@ -9,13 +9,18 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const Index = () => {
   const [data, setData] = useState<SalesRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string } | null>(null);
 
-  const handleDataLoaded = (records: SalesRecord[]) => {
+  const handleDataLoaded = (records: SalesRecord[], startDate?: string, endDate?: string) => {
     setData(records);
+    if (startDate && endDate) {
+      setDateRange({ startDate, endDate });
+    }
   };
 
   const handleReset = () => {
     setData([]);
+    setDateRange(null);
   };
 
   return (
@@ -23,7 +28,7 @@ const Index = () => {
       {data.length === 0 ? (
         <FileUpload onDataLoaded={handleDataLoaded} />
       ) : (
-        <Dashboard data={data} onReset={handleReset} />
+        <Dashboard data={data} onReset={handleReset} initialDateRange={dateRange} />
       )}
     </div>
   );

@@ -3,11 +3,94 @@ import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Database } from "lu
 import { SalesRecord } from "@/types/sales";
 
 interface FileUploadProps {
-  onDataLoaded: (data: SalesRecord[]) => void;
+  onDataLoaded: (data: SalesRecord[], startDate?: string, endDate?: string) => void;
   onError?: (error: string) => void;
 }
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+const parseDate = (dateStr: string): Date | null => {
+  if (!dateStr || typeof dateStr !== 'string') return null;
+
+  // Remover espaços
+  dateStr = dateStr.trim();
+
+  // Tentar formato DD/MM/YYYY
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10);
+      const year = parseInt(parts[2], 10);
+      
+      if (day > 0 && day <= 31 && month > 0 && month <= 12 && year > 1900 && year < 2100) {
+        const date = new Date(year, month - 1, day);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      }
+    }
+  }
+
+  // Tentar formato YYYY-MM-DD
+  if (dateStr.includes('-') && !dateStr.includes('T')) {
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10);
+      const day = parseInt(parts[2], 10);
+      
+      if (day > 0 && day <= 31 && month > 0 && month <= 12 && year > 1900 && year < 2100) {
+        const date = new Date(year, month - 1, day);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      }
+    }
+  }
+
+  // Tentar usar Date.parse como último recurso
+  const date = new Date(dateStr);
+  if (!isNaN(date.getTime())) {
+    return date;
+  }
+
+  return null;
+};
+
+const getDateRange = (records: SalesRecord[]): { startDate: string; endDate: string } | null => {
+  if (records.length === 0) return null;
+
+  const dates = records
+    .map(r => {
+      const dateStr = r.data_venda || r.data_compra || r.data_transacao || '';
+      return parseDate(dateStr);
+    })
+    .filter((d): d is Date => d !== null);
+
+  if (dates.length === 0) {
+    console.warn('⚠️ Nenhuma data válida encontrada nos registros');
+    return null;
+  }
+
+  const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
+  const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
+
+  const formatDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const result = {
+    startDate: formatDate(minDate),
+    endDate: formatDate(maxDate),
+  };
+
+  console.log('📅 Data range detectado:', result, `(${dates.length} datas válidas de ${records.length} registros)`);
+  return result;
+};
 
 export const FileUpload = ({ onDataLoaded, onError }: FileUploadProps) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -83,8 +166,9 @@ export const FileUpload = ({ onDataLoaded, onError }: FileUploadProps) => {
         ...item,
       }));
 
-      onDataLoaded(records);
-      console.log('✅ Dados carregados do backend');
+      const dateRange = getDateRange(records);
+      onDataLoaded(records, dateRange?.startDate, dateRange?.endDate);
+      console.log('✅ Dados carregados do backend', { dateRange });
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Erro desconhecido ao processar arquivo';
       console.error('Erro ao processar arquivo:', error);
@@ -150,8 +234,9 @@ export const FileUpload = ({ onDataLoaded, onError }: FileUploadProps) => {
         ...item,
       }));
 
-      onDataLoaded(records);
-      console.log('✅ Dados padrão carregados do backend');
+      const dateRange = getDateRange(records);
+      onDataLoaded(records, dateRange?.startDate, dateRange?.endDate);
+      console.log('✅ Dados padrão carregados do backend', { dateRange });
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Erro desconhecido ao carregar dados';
       console.error('Erro ao carregar dados:', error);
