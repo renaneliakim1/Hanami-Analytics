@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle } from "lucide-react";
+import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Database } from "lucide-react";
 import { SalesRecord } from "@/types/sales";
 
 interface FileUploadProps {
@@ -123,6 +123,46 @@ export const FileUpload = ({ onDataLoaded, onError }: FileUploadProps) => {
     input.click();
   }, [handleFile]);
 
+  const handleLoadDefaultData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    setFileName('Dados Padrão');
+
+    try {
+      let dataResponse: Response;
+      try {
+        dataResponse = await fetch(`${API_URL}/sales?limit=10000`);
+      } catch (fetchError) {
+        throw new Error(
+          `O sistema está temporariamente indisponível. Por favor, tente novamente em alguns momentos.`
+        );
+      }
+
+      if (!dataResponse.ok) {
+        throw new Error(
+          `Erro ao carregar os dados. Por favor, tente novamente.`
+        );
+      }
+
+      const dataResult = await dataResponse.json();
+      const records: SalesRecord[] = dataResult.data.map((item: any) => ({
+        id: item.id || item.id_transacao || Math.random(),
+        ...item,
+      }));
+
+      onDataLoaded(records);
+      console.log('✅ Dados padrão carregados do backend');
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Erro desconhecido ao carregar dados';
+      console.error('Erro ao carregar dados:', error);
+      setError(errorMsg);
+      onError?.(errorMsg);
+      setFileName(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [onDataLoaded, onError]);
+
   return (
     <div className="min-h-screen flex items-center justify-center p-8">
       <div className="w-full max-w-2xl animate-fade-in">
@@ -136,11 +176,11 @@ export const FileUpload = ({ onDataLoaded, onError }: FileUploadProps) => {
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-100 border border-red-400 rounded-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <div className="mb-6 p-4 bg-red-100 dark:bg-red-950 border border-red-400 dark:border-red-800 rounded-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-red-800 font-medium">Erro ao processar</p>
-              <p className="text-red-700 text-sm">{error}</p>
+              <p className="text-red-800 dark:text-red-200 font-medium">Erro ao processar</p>
+              <p className="text-red-700 dark:text-red-300 text-sm">{error}</p>
             </div>
           </div>
         )}
@@ -188,6 +228,18 @@ export const FileUpload = ({ onDataLoaded, onError }: FileUploadProps) => {
               </>
             )}
           </div>
+        </div>
+
+        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="text-center text-sm text-muted-foreground">Ou</div>
+          <button
+            onClick={handleLoadDefaultData}
+            disabled={isLoading}
+            className="flex items-center gap-2 px-6 py-3 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Database className="w-4 h-4" />
+            Usar Dados Padrão
+          </button>
         </div>
       </div>
     </div>

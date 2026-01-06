@@ -178,19 +178,19 @@ const parseCSVLine = (line: string): string[] => {
   return result;
 };
 
-export const formatCurrency = (value: number): string => {
-  if (isNaN(value) || value === null || value === undefined) return 'R$ 0';
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-};
-
 export const formatNumber = (value: number): string => {
   if (isNaN(value) || value === null || value === undefined) return '0';
   return new Intl.NumberFormat('pt-BR').format(value);
+};
+
+export const formatCurrency = (value: number): string => {
+  if (isNaN(value) || value === null || value === undefined) return 'R$ 0,00';
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
 };
 
 export const formatPercent = (value: number): string => {

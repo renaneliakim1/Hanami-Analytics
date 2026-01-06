@@ -27,7 +27,7 @@ export const AreaChartComponent = ({ data, title, dataKey, color = "hsl(199, 89%
   if (!hasData) {
     return (
       <div className="chart-container h-[400px]">
-        <h3 className="text-lg font-semibold mb-6">{title}</h3>
+        <h3 className="text-lg font-semibold mb-6 dark:text-white">{title}</h3>
         <div className="flex items-center justify-center h-[85%]">
           <p className="text-muted-foreground">Nenhum dado disponível</p>
         </div>
@@ -37,7 +37,7 @@ export const AreaChartComponent = ({ data, title, dataKey, color = "hsl(199, 89%
 
   return (
     <div className="chart-container h-[400px]">
-      <h3 className="text-lg font-semibold mb-6">{title}</h3>
+      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">{title}</h3>
       <ResponsiveContainer width="100%" height="85%">
         <AreaChart data={data}>
           <defs>

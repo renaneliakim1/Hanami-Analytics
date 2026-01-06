@@ -6,39 +6,39 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 222 47% 11%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 0 0% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 0 0% 15%;
 
-    --primary: 199 89% 48%;
+    --primary: 219 89% 52%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 210 40% 92%;
+    --secondary-foreground: 0 0% 15%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 210 40% 92%;
+    --muted-foreground: 215 16% 35%;
 
-    --accent: 142 71% 45%;
+    --accent: 134 72% 48%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 199 89% 48%;
+    --border: 214 32% 90%;
+    --input: 214 32% 90%;
+    --ring: 219 89% 52%;
 
     --radius: 0.75rem;
 
-    --success: 142 71% 45%;
-    --warning: 38 92% 50%;
-    --info: 199 89% 48%;
+    --success: 134 72% 48%;
+    --warning: 45 93% 47%;
+    --info: 219 89% 52%;
     
     --gradient-primary: linear-gradient(135deg, hsl(199 89% 48%), hsl(199 89% 35%));
     --gradient-success: linear-gradient(135deg, hsl(142 71% 45%), hsl(142 71% 35%));
@@ -46,6 +46,14 @@
     
     --shadow-glow: 0 0 40px hsl(199 89% 48% / 0.1);
     --shadow-card: 0 4px 24px hsl(222 47% 11% / 0.08);
+    
+    /* KPI Card backgrounds */
+    --kpi-bg-0: rgb(240, 249, 255);
+    --kpi-bg-1: rgb(240, 253, 250);
+    --kpi-bg-2: rgb(255, 247, 237);
+    --kpi-bg-3: rgb(250, 245, 255);
+    --kpi-bg-4: rgb(253, 242, 248);
+    --kpi-bg-5: rgb(238, 242, 255);
     
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 222 47% 11%;
@@ -97,6 +105,14 @@
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 222 47% 16%;
     --sidebar-ring: 199 89% 48%;
+    
+    /* KPI Card backgrounds */
+    --kpi-bg-0: rgb(25, 28, 37);
+    --kpi-bg-1: rgb(25, 28, 37);
+    --kpi-bg-2: rgb(25, 28, 37);
+    --kpi-bg-3: rgb(25, 28, 37);
+    --kpi-bg-4: rgb(25, 28, 37);
+    --kpi-bg-5: rgb(25, 28, 37);
   }
 }
 
@@ -113,50 +129,65 @@
 
 @layer components {
   .glass-card {
-    @apply bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl;
+    @apply bg-card/80 backdrop-blur-xl border border-border/50 dark:border-gray-800/50 rounded-xl;
     box-shadow: var(--shadow-card);
   }
 
+  .dark .glass-card {
+    background-color: rgba(25, 28, 37, 0.8);
+  }
+
   .kpi-card {
-    @apply glass-card p-6 relative overflow-hidden transition-all duration-300;
+    @apply p-6 relative overflow-hidden transition-all duration-300 rounded-xl shadow-sm hover:shadow-lg;
   }
 
   .kpi-card:hover {
-    @apply border-primary/30;
-    box-shadow: var(--shadow-glow);
+    @apply transform -translate-y-1;
   }
 
   .kpi-value {
-    @apply text-3xl font-bold text-foreground tracking-tight;
+    @apply text-2xl font-bold text-gray-900 dark:text-white tracking-tight;
   }
 
   .kpi-label {
-    @apply text-sm text-muted-foreground font-medium uppercase tracking-wider;
+    @apply text-sm text-gray-600 dark:text-gray-400 font-medium;
   }
 
   .chart-container {
-    @apply glass-card p-6;
+    @apply bg-white rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-800;
+  }
+
+  .dark .chart-container {
+    background-color: rgb(25, 28, 37);
+  }
+
+  .chart-container h3 {
+    @apply text-lg font-bold text-gray-900 dark:text-white;
   }
 
   .tab-modern {
-    @apply relative px-6 py-3 text-sm font-medium text-muted-foreground transition-all duration-200;
+    @apply relative px-4 py-3 text-sm font-semibold text-gray-600 dark:text-gray-400 transition-all duration-200;
   }
 
   .tab-modern[data-state="active"] {
-    @apply text-foreground;
+    @apply text-blue-600 dark:text-blue-400;
   }
 
   .tab-modern[data-state="active"]::after {
     content: '';
-    @apply absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full;
+    @apply absolute bottom-0 left-0 right-0 h-1 bg-blue-600 rounded-full;
   }
 
   .upload-zone {
-    @apply border-2 border-dashed border-border/50 rounded-2xl p-12 transition-all duration-300 cursor-pointer bg-card/50;
+    @apply border-2 border-dashed border-border/50 dark:border-gray-700/50 rounded-2xl p-12 transition-all duration-300 cursor-pointer bg-card/50;
+  }
+
+  .dark .upload-zone {
+    background-color: rgba(25, 28, 37, 0.5);
   }
 
   .upload-zone:hover {
-    @apply border-primary/50 bg-primary/5;
+    @apply border-primary/50 bg-primary/5 dark:bg-primary/10;
   }
 
   .badge-success {
@@ -226,28 +257,48 @@
     margin: 1cm;
   }
 
+  html, body {
+    width: 100%;
+    height: 100%;
+  }
+
   body {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
+    margin: 0;
+    padding: 0;
   }
 
   .no-print {
     display: none !important;
   }
 
+  /* Mostrar todas as abas e seu conteúdo */
+  [role="tablist"] {
+    display: none !important;
+  }
+
+  /* Mostrar conteúdo da aba */
+  [role="tabpanel"] {
+    display: block !important;
+  }
+
   .glass-card {
     box-shadow: none !important;
     border: 1px solid #ddd !important;
     page-break-inside: avoid;
+    background: white !important;
   }
 
   .chart-container {
     page-break-inside: avoid;
     margin-bottom: 1rem;
+    width: 100%;
   }
 
   h1, h2, h3 {
     page-break-after: avoid;
+    color: #000 !important;
   }
 
   /* Garantir que gráficos sejam visíveis na impressão */
@@ -257,18 +308,35 @@
   }
 
   /* Ocultar elementos interativos na impressão */
-  button:not(.print-visible) {
+  button:not(.print-visible),
+  input,
+  [class*="sticky"] {
     display: none !important;
   }
 
   /* Ajustar grid para impressão */
   .grid {
     gap: 0.5rem !important;
+    width: 100%;
   }
 
   /* Melhorar contraste para impressão */
   * {
     color-adjust: exact !important;
     -webkit-print-color-adjust: exact !important;
+    text-shadow: none !important;
+  }
+
+  /* KPI Cards */
+  .kpi-card {
+    page-break-inside: avoid;
+    border: 1px solid #ddd !important;
+    background: white !important;
+  }
+
+  /* Remove backdrop effects */
+  .backdrop-blur-sm,
+  .backdrop-blur {
+    backdrop-filter: none !important;
   }
 }

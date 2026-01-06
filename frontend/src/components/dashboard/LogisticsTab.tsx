@@ -19,7 +19,7 @@ export const LogisticsTab = ({ statusEntrega, tempoEntregaMedia, avaliacaoPorPro
               <Truck className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{statusEntrega.length}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{statusEntrega.length}</p>
               <p className="text-sm text-muted-foreground">Status de Entrega</p>
             </div>
           </div>
@@ -30,7 +30,7 @@ export const LogisticsTab = ({ statusEntrega, tempoEntregaMedia, avaliacaoPorPro
               <Clock className="w-6 h-6 text-accent" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{tempoEntregaMedia.toFixed(1)} dias</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{tempoEntregaMedia.toFixed(1)} dias</p>
               <p className="text-sm text-muted-foreground">Tempo Médio de Entrega</p>
             </div>
           </div>
@@ -41,7 +41,7 @@ export const LogisticsTab = ({ statusEntrega, tempoEntregaMedia, avaliacaoPorPro
               <AlertTriangle className="w-6 h-6 text-warning" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{avaliacaoPorProduto.filter(p => p.avaliacao < 3).length}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{avaliacaoPorProduto.filter(p => p.avaliacao < 3).length}</p>
               <p className="text-sm text-muted-foreground">Produtos com Baixa Avaliação</p>
             </div>
           </div>

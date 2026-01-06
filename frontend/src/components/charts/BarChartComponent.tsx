@@ -11,11 +11,16 @@ interface BarChartComponentProps {
 }
 
 const defaultColors = [
-  "hsl(199, 89%, 48%)",
-  "hsl(142, 71%, 45%)",
-  "hsl(38, 92%, 50%)",
-  "hsl(280, 67%, 55%)",
-  "hsl(340, 75%, 55%)",
+  "#3b82f6",  // blue-500
+  "#10b981",  // emerald-500
+  "#f59e0b",  // amber-500
+  "#8b5cf6",  // violet-500
+  "#ec4899",  // pink-500
+  "#06b6d4",  // cyan-500
+  "#6366f1",  // indigo-500
+  "#14b8a6",  // teal-500
+  "#d97706",  // amber-600
+  "#7c3aed",  // violet-600
 ];
 
 export const BarChartComponent = ({ 
@@ -44,7 +49,7 @@ export const BarChartComponent = ({
   if (!hasData) {
     return (
       <div className="chart-container h-[400px]">
-        <h3 className="text-lg font-semibold mb-6">{title}</h3>
+        <h3 className="text-lg font-semibold mb-6 dark:text-white">{title}</h3>
         <div className="flex items-center justify-center h-[85%]">
           <p className="text-muted-foreground">Nenhum dado disponível</p>
         </div>
@@ -54,7 +59,7 @@ export const BarChartComponent = ({
 
   return (
     <div className="chart-container h-[400px]">
-      <h3 className="text-lg font-semibold mb-6">{title}</h3>
+      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">{title}</h3>
       <ResponsiveContainer width="100%" height="85%">
         <BarChart 
           data={data} 

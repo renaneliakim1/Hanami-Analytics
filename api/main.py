@@ -1,10 +1,11 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Query
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 from typing import List, Dict, Optional
 import os
 from io import BytesIO
 import tempfile
+from datetime import datetime
 
 app = FastAPI(
     title="Hanami Analytics API",
@@ -23,7 +24,7 @@ app.add_middleware(
 
 # Armazenamento em memória para dados enviados
 uploaded_data: Dict[str, pd.DataFrame] = {}
-CSV_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "public", "vendas_ficticias_10000_linhas.csv"))
+CSV_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "vendas_ficticias_10000_linhas.csv"))
 df_default = None
 
 def load_default_data():
@@ -46,6 +47,30 @@ def get_current_data() -> pd.DataFrame:
     if uploaded_data and 'current' in uploaded_data:
         return uploaded_data['current']
     return load_default_data()
+
+def filter_data_by_date(data: pd.DataFrame, start_date: Optional[str] = None, end_date: Optional[str] = None) -> pd.DataFrame:
+    """Filtra dados por intervalo de datas"""
+    if data.empty or 'data_venda' not in data.columns:
+        return data
+    
+    try:
+        df = data.copy()
+        df['data_venda'] = pd.to_datetime(df['data_venda'])
+        
+        if start_date:
+            start = pd.to_datetime(start_date)
+            df = df[df['data_venda'] >= start]
+        
+        if end_date:
+            end = pd.to_datetime(end_date)
+            # Incluir o dia inteiro (até 23:59:59)
+            end = end + pd.Timedelta(days=1)
+            df = df[df['data_venda'] < end]
+        
+        return df
+    except Exception as e:
+        print(f"Erro ao filtrar por data: {e}")
+        return data
 
 def parse_csv_file(file_content: bytes) -> pd.DataFrame:
     """Parser robusto para CSV"""
@@ -190,9 +215,10 @@ async def get_analysis():
     return analysis
 
 @app.get("/kpis")
-async def get_kpis():
+async def get_kpis(start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
     """Retorna KPIs principais - Algoritmo de análise"""
     data = get_current_data()
+    data = filter_data_by_date(data, start_date, end_date)
     
     if data.empty:
         return {
@@ -232,9 +258,10 @@ async def get_kpis():
     return kpis
 
 @app.get("/sales-by-month")
-async def get_sales_by_month():
+async def get_sales_by_month(start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
     """Retorna vendas agrupadas por mês - Algoritmo de análise temporal"""
     data = get_current_data()
+    data = filter_data_by_date(data, start_date, end_date)
     
     if data.empty:
         return []
@@ -263,9 +290,10 @@ async def get_sales_by_month():
         return []
 
 @app.get("/sales-by-category")
-async def get_sales_by_category():
+async def get_sales_by_category(start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
     """Retorna vendas por categoria - Algoritmo de segmentação"""
     data = get_current_data()
+    data = filter_data_by_date(data, start_date, end_date)
     
     if data.empty or 'categoria' not in data.columns:
         return []
@@ -281,9 +309,10 @@ async def get_sales_by_category():
         return []
 
 @app.get("/top-products")
-async def get_top_products(limit: int = 10):
+async def get_top_products(limit: int = 10, start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
     """Retorna produtos mais vendidos - Algoritmo de ranking"""
     data = get_current_data()
+    data = filter_data_by_date(data, start_date, end_date)
     
     if data.empty or 'nome_produto' not in data.columns:
         return []
@@ -313,9 +342,10 @@ async def get_top_products(limit: int = 10):
         return []
 
 @app.get("/customers-by-gender")
-async def get_customers_by_gender():
+async def get_customers_by_gender(start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
     """Retorna distribuição de clientes por gênero - Algoritmo de segmentação"""
     data = get_current_data()
+    data = filter_data_by_date(data, start_date, end_date)
     
     if data.empty or 'genero_cliente' not in data.columns:
         return []
@@ -330,9 +360,10 @@ async def get_customers_by_gender():
         return []
 
 @app.get("/sales-by-state")
-async def get_sales_by_state(limit: int = 10):
+async def get_sales_by_state(limit: int = 10, start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
     """Retorna vendas por estado/região - Algoritmo de análise geográfica"""
     data = get_current_data()
+    data = filter_data_by_date(data, start_date, end_date)
     
     if data.empty or 'estado_cliente' not in data.columns:
         return []
@@ -348,9 +379,10 @@ async def get_sales_by_state(limit: int = 10):
         return []
 
 @app.get("/payment-methods")
-async def get_payment_methods():
+async def get_payment_methods(start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
     """Retorna formas de pagamento - Algoritmo de análise de pagamentos"""
     data = get_current_data()
+    data = filter_data_by_date(data, start_date, end_date)
     
     if data.empty or 'forma_pagamento' not in data.columns:
         return []
@@ -369,24 +401,131 @@ async def get_payment_methods():
         print(f"Erro ao agrupar por forma de pagamento: {e}")
         return []
 
+@app.get("/customers-by-age")
+async def get_customers_by_age(start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
+    """Retorna distribuição de clientes por faixa etária - Algoritmo de segmentação"""
+    data = get_current_data()
+    data = filter_data_by_date(data, start_date, end_date)
+    
+    if data.empty or 'idade_cliente' not in data.columns:
+        return []
+    
+    try:
+        # Criar faixas etárias
+        bins = [0, 18, 25, 35, 45, 55, 65, 150]
+        labels = ['< 18', '18-25', '25-35', '35-45', '45-55', '55-65', '> 65']
+        data['faixa_etaria'] = pd.cut(data['idade_cliente'], bins=bins, labels=labels, right=False)
+        
+        age_dist = data.groupby('faixa_etaria', observed=True).agg({
+            'cliente_id': 'nunique'
+        }).reset_index()
+        
+        age_dist.columns = ['name', 'value']
+        return age_dist.to_dict('records')
+    except Exception as e:
+        print(f"Erro ao distribuir por faixa etária: {e}")
+        return []
+
+@app.get("/installments")
+async def get_installments(start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
+    """Retorna distribuição de parcelamento - Algoritmo de análise de pagamentos"""
+    data = get_current_data()
+    data = filter_data_by_date(data, start_date, end_date)
+    
+    if data.empty or 'parcelas' not in data.columns:
+        return []
+    
+    try:
+        installments = data.groupby('parcelas').agg({
+            'id_transacao': 'count',
+            'valor_final': 'sum'
+        }).reset_index()
+        
+        installments.columns = ['name', 'quantidade', 'value']
+        installments = installments.sort_values('quantidade', ascending=False)
+        return installments.to_dict('records')
+    except Exception as e:
+        print(f"Erro ao agrupar por parcelamento: {e}")
+        return []
+
+@app.get("/delivery-status")
+async def get_delivery_status(start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
+    """Retorna status de entrega - Algoritmo de análise logística"""
+    data = get_current_data()
+    data = filter_data_by_date(data, start_date, end_date)
+    
+    if data.empty or 'status_entrega' not in data.columns:
+        return []
+    
+    try:
+        status = data.groupby('status_entrega').agg({
+            'id_transacao': 'count'
+        }).reset_index()
+        
+        status.columns = ['name', 'value']
+        status = status.sort_values('value', ascending=False)
+        return status.to_dict('records')
+    except Exception as e:
+        print(f"Erro ao agrupar por status de entrega: {e}")
+        return []
+
+@app.get("/product-ratings")
+async def get_product_ratings(limit: int = 10, start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
+    """Retorna produtos com menor avaliação - Algoritmo de análise de qualidade"""
+    data = get_current_data()
+    data = filter_data_by_date(data, start_date, end_date)
+    
+    if data.empty or 'nome_produto' not in data.columns or 'avaliacao_produto' not in data.columns:
+        return []
+    
+    try:
+        ratings = data.groupby('nome_produto').agg({
+            'avaliacao_produto': 'mean',
+            'id_transacao': 'count'
+        }).reset_index()
+        
+        ratings.columns = ['name', 'avaliacao', 'quantidade']
+        ratings = ratings[ratings['quantidade'] >= 2]  # Apenas produtos com 2+ avaliações
+        ratings = ratings.sort_values('avaliacao', ascending=True).head(limit)
+        return ratings[['name', 'avaliacao']].to_dict('records')
+    except Exception as e:
+        print(f"Erro ao listar produtos com menor avaliação: {e}")
+        return []
+
+@app.get("/average-delivery-time")
+async def get_average_delivery_time(start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
+    """Retorna tempo médio de entrega - Algoritmo de análise logística"""
+    data = get_current_data()
+    data = filter_data_by_date(data, start_date, end_date)
+    
+    if data.empty or 'tempo_entrega_dias' not in data.columns:
+        return {"tempo_medio": 0}
+    
+    try:
+        tempo_medio = float(data['tempo_entrega_dias'].mean())
+        return {"tempo_medio": round(tempo_medio, 1)}
+    except Exception as e:
+        print(f"Erro ao calcular tempo médio de entrega: {e}")
+        return {"tempo_medio": 0}
+
 # ============================================================================
 # ENDPOINTS DE RELATÓRIOS
 # ============================================================================
 
 @app.get("/reports/summary")
-async def get_report_summary():
+async def get_report_summary(start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
     """Relatório resumido com principais insights"""
     data = get_current_data()
     
     # KPIs
-    kpis = await get_kpis()
+    kpis = await get_kpis(start_date=start_date, end_date=end_date)
     
     # Top 3 categorias
-    categories = await get_sales_by_category()
+    categories = await get_sales_by_category(start_date=start_date, end_date=end_date)
     top_categories = categories[:3] if categories else []
     
     # Top 5 produtos
-    top_products_data = await get_top_products(limit=5)
+    top_products_data = await get_top_products(limit=5, start_date=start_date, end_date=end_date)
     
     return {
         "timestamp": pd.Timestamp.now().isoformat(),
@@ -397,19 +536,19 @@ async def get_report_summary():
     }
 
 @app.get("/reports/detailed")
-async def get_report_detailed():
+async def get_report_detailed(start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
     """Relatório detalhado com todas as análises"""
     
     report = {
         "timestamp": pd.Timestamp.now().isoformat(),
         "analysis": await get_analysis(),
-        "kpis": await get_kpis(),
-        "monthly_sales": await get_sales_by_month(),
-        "sales_by_category": await get_sales_by_category(),
-        "top_products": await get_top_products(limit=10),
-        "customers_by_gender": await get_customers_by_gender(),
-        "sales_by_state": await get_sales_by_state(limit=15),
-        "payment_methods": await get_payment_methods(),
+        "kpis": await get_kpis(start_date=start_date, end_date=end_date),
+        "monthly_sales": await get_sales_by_month(start_date=start_date, end_date=end_date),
+        "sales_by_category": await get_sales_by_category(start_date=start_date, end_date=end_date),
+        "top_products": await get_top_products(limit=10, start_date=start_date, end_date=end_date),
+        "customers_by_gender": await get_customers_by_gender(start_date=start_date, end_date=end_date),
+        "sales_by_state": await get_sales_by_state(limit=15, start_date=start_date, end_date=end_date),
+        "payment_methods": await get_payment_methods(start_date=start_date, end_date=end_date),
     }
     
     return report

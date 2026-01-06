@@ -24,7 +24,7 @@ export interface APICategory {
   value: number;
 }
 
-export const useApiReport = () => {
+export const useApiReport = (startDate?: string, endDate?: string) => {
   const [kpis, setKpis] = useState<APIKPIs | null>(null);
   const [monthlySales, setMonthlySales] = useState<APIMonthlySales[]>([]);
   const [salesByCategory, setSalesByCategory] = useState<APICategory[]>([]);
@@ -32,6 +32,11 @@ export const useApiReport = () => {
   const [customersByGender, setCustomersByGender] = useState<APICategory[]>([]);
   const [salesByState, setSalesByState] = useState<APICategory[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
+  const [customersByAge, setCustomersByAge] = useState<any[]>([]);
+  const [installments, setInstallments] = useState<any[]>([]);
+  const [deliveryStatus, setDeliveryStatus] = useState<APICategory[]>([]);
+  const [productRatings, setProductRatings] = useState<any[]>([]);
+  const [averageDeliveryTime, setAverageDeliveryTime] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,6 +45,15 @@ export const useApiReport = () => {
       try {
         setLoading(true);
         setError(null);
+
+        // Construir query params de data
+        const params = new URLSearchParams();
+        if (startDate) params.append('start_date', startDate);
+        if (endDate) params.append('end_date', endDate);
+        const queryString = params.toString();
+        const suffix = queryString ? `?${queryString}` : '';
+
+        console.log('📡 Buscando dados com filtro de datas:', { startDate, endDate, suffix });
 
         // Carregar todos os dados em paralelo
         const [
@@ -50,14 +64,24 @@ export const useApiReport = () => {
           genderRes,
           stateRes,
           paymentRes,
+          ageRes,
+          installmentsRes,
+          deliveryRes,
+          ratingsRes,
+          timeRes,
         ] = await Promise.all([
-          fetch(`${API_URL}/kpis`),
-          fetch(`${API_URL}/sales-by-month`),
-          fetch(`${API_URL}/sales-by-category`),
-          fetch(`${API_URL}/top-products`),
-          fetch(`${API_URL}/customers-by-gender`),
-          fetch(`${API_URL}/sales-by-state`),
-          fetch(`${API_URL}/payment-methods`),
+          fetch(`${API_URL}/kpis${suffix}`),
+          fetch(`${API_URL}/sales-by-month${suffix}`),
+          fetch(`${API_URL}/sales-by-category${suffix}`),
+          fetch(`${API_URL}/top-products${suffix}`),
+          fetch(`${API_URL}/customers-by-gender${suffix}`),
+          fetch(`${API_URL}/sales-by-state${suffix}`),
+          fetch(`${API_URL}/payment-methods${suffix}`),
+          fetch(`${API_URL}/customers-by-age${suffix}`),
+          fetch(`${API_URL}/installments${suffix}`),
+          fetch(`${API_URL}/delivery-status${suffix}`),
+          fetch(`${API_URL}/product-ratings${suffix}`),
+          fetch(`${API_URL}/average-delivery-time${suffix}`),
         ]);
 
         // Verificar se todos os responses são ok
@@ -68,7 +92,12 @@ export const useApiReport = () => {
           !productsRes.ok ||
           !genderRes.ok ||
           !stateRes.ok ||
-          !paymentRes.ok
+          !paymentRes.ok ||
+          !ageRes.ok ||
+          !installmentsRes.ok ||
+          !deliveryRes.ok ||
+          !ratingsRes.ok ||
+          !timeRes.ok
         ) {
           throw new Error('Erro ao carregar dados do servidor');
         }
@@ -81,6 +110,26 @@ export const useApiReport = () => {
         const genderData = await genderRes.json();
         const stateData = await stateRes.json();
         const paymentData = await paymentRes.json();
+        const ageData = await ageRes.json();
+        const installmentsData = await installmentsRes.json();
+        const deliveryData = await deliveryRes.json();
+        const ratingsData = await ratingsRes.json();
+        const timeData = await timeRes.json();
+
+        console.log('✅ Dados carregados com sucesso:', {
+          kpis: kpisData,
+          monthlySales: monthlySalesData.length,
+          categories: categoriesData.length,
+          products: productsData.length,
+          gender: genderData.length,
+          state: stateData.length,
+          payment: paymentData.length,
+          age: ageData.length,
+          installments: installmentsData.length,
+          delivery: deliveryData.length,
+          ratings: ratingsData.length,
+          time: timeData,
+        });
 
         setKpis(kpisData);
         setMonthlySales(monthlySalesData);
@@ -89,17 +138,22 @@ export const useApiReport = () => {
         setCustomersByGender(genderData);
         setSalesByState(stateData);
         setPaymentMethods(paymentData);
+        setCustomersByAge(ageData);
+        setInstallments(installmentsData);
+        setDeliveryStatus(deliveryData);
+        setProductRatings(ratingsData);
+        setAverageDeliveryTime(timeData);
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : 'Erro desconhecido';
         setError(errorMsg);
-        console.error('Erro ao carregar relatório:', err);
+        console.error('❌ Erro ao carregar relatório:', err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchReportData();
-  }, []);
+  }, [startDate, endDate]);
 
   return {
     kpis,
@@ -109,6 +163,11 @@ export const useApiReport = () => {
     customersByGender,
     salesByState,
     paymentMethods,
+    customersByAge,
+    installments,
+    deliveryStatus,
+    productRatings,
+    averageDeliveryTime,
     loading,
     error,
   };

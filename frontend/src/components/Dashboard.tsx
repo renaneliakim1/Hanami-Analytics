@@ -9,8 +9,10 @@ import { ProductsTab } from "./dashboard/ProductsTab";
 import { CustomersTab } from "./dashboard/CustomersTab";
 import { PaymentsTab } from "./dashboard/PaymentsTab";
 import { LogisticsTab } from "./dashboard/LogisticsTab";
+import { DateRangePicker } from "./DateRangePicker";
 import { ThemeToggle } from "./ThemeToggle";
-import { formatNumber } from "@/utils/csvParser";
+import { formatNumber, formatCurrency } from "@/utils/csvParser";
+import { useState } from "react";
 
 interface DashboardProps {
   data: SalesRecord[];
@@ -18,11 +20,17 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({ data, onReset }: DashboardProps) => {
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  
   // Usar dados locais se disponíveis, senão carregar da API
   const salesData = useSalesData(data);
-  const apiData = useApiReport();
+  const apiData = useApiReport(startDate || undefined, endDate || undefined);
+  
+  // Determinar se há filtro de data ativo
+  const hasDateFilter = startDate || endDate;
 
-  // Priorizar dados da API se carregados, senão usar dados locais
+  // Priorizar dados da API se carregados, senão usar dados locais (apenas quando não há filtro)
   const kpis = apiData.kpis ? {
     faturamentoTotal: apiData.kpis.faturamento_total || 0,
     lucroTotal: apiData.kpis.lucro_total || 0,
@@ -30,7 +38,7 @@ export const Dashboard = ({ data, onReset }: DashboardProps) => {
     clientesUnicos: apiData.kpis.clientes_unicos || 0,
     ticketMedio: apiData.kpis.ticket_medio || 0,
     avaliacaoMedia: apiData.kpis.avaliacao_media || 0,
-  } : salesData.kpis;
+  } : (hasDateFilter ? { faturamentoTotal: 0, lucroTotal: 0, quantidadeVendas: 0, clientesUnicos: 0, ticketMedio: 0, avaliacaoMedia: 0 } : salesData.kpis);
 
   const vendasPorMes = apiData.monthlySales.length > 0 
     ? apiData.monthlySales.map(m => ({
@@ -39,30 +47,51 @@ export const Dashboard = ({ data, onReset }: DashboardProps) => {
         lucro: m.lucro || 0,
         vendas: m.vendas || 0
       }))
-    : salesData.vendasPorMes;
+    : (hasDateFilter ? [] : salesData.vendasPorMes);
 
   const vendasPorCategoria = apiData.salesByCategory.length > 0
     ? apiData.salesByCategory
-    : salesData.vendasPorCategoria;
+    : (hasDateFilter ? [] : salesData.vendasPorCategoria);
 
   const produtosMaisVendidos = apiData.topProducts.length > 0
     ? apiData.topProducts
-    : salesData.produtosMaisVendidos;
+    : (hasDateFilter ? [] : salesData.produtosMaisVendidos);
 
   const clientesPorGenero = apiData.customersByGender.length > 0
     ? apiData.customersByGender
-    : salesData.clientesPorGenero;
+    : (hasDateFilter ? [] : salesData.clientesPorGenero);
 
   const vendasPorEstado = apiData.salesByState.length > 0
     ? apiData.salesByState
-    : salesData.vendasPorEstado;
+    : (hasDateFilter ? [] : salesData.vendasPorEstado);
 
   const formaPagamento = apiData.paymentMethods.length > 0
     ? apiData.paymentMethods
-    : salesData.formaPagamento;
+    : (hasDateFilter ? [] : salesData.formaPagamento);
+
+  const clientesPorIdade = apiData.customersByAge.length > 0
+    ? apiData.customersByAge
+    : (hasDateFilter ? [] : salesData.clientesPorIdade);
+
+  const parcelamentoMedio = apiData.installments.length > 0
+    ? apiData.installments
+    : (hasDateFilter ? [] : salesData.parcelamentoMedio);
+
+  const statusEntrega = apiData.deliveryStatus.length > 0
+    ? apiData.deliveryStatus
+    : (hasDateFilter ? [] : salesData.statusEntrega);
+
+  const avaliacaoPorProduto = apiData.productRatings.length > 0
+    ? apiData.productRatings
+    : (hasDateFilter ? [] : salesData.avaliacaoPorProduto);
+
+  const tempoEntregaMedia = apiData.averageDeliveryTime?.tempo_medio || 0;
 
   const handlePrint = () => {
-    window.print();
+    // Usar o print nativo do navegador que respeita CSS de impressão
+    setTimeout(() => {
+      window.print();
+    }, 200);
   };
 
   const tabs = [
@@ -76,6 +105,14 @@ export const Dashboard = ({ data, onReset }: DashboardProps) => {
 
   return (
     <div className="min-h-screen p-6 lg:p-8">
+      {/* Print Header - Only shows when printing */}
+      <div className="hidden print:block mb-8">
+        <h1 className="text-4xl font-bold mb-2">Hanami Analytics</h1>
+        <p className="text-lg text-gray-600 mb-4">Relatório de Análise de Dados</p>
+        <p className="text-sm text-gray-500">Gerado em: {new Date().toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        <hr className="my-4" />
+      </div>
+
       {/* Header */}
       <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
         <div>
@@ -109,7 +146,7 @@ export const Dashboard = ({ data, onReset }: DashboardProps) => {
 
       {/* Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <div className="flex justify-center">
+        <div className="sticky top-0 z-40 flex justify-center py-4 bg-gradient-to-b from-background to-background/95 backdrop-blur-sm border-b">
           <TabsList className="glass-card p-1 inline-flex">
             {tabs.map((tab) => (
             <TabsTrigger
@@ -122,6 +159,14 @@ export const Dashboard = ({ data, onReset }: DashboardProps) => {
             </TabsTrigger>
           ))}
         </TabsList>
+        </div>
+
+        {/* Date Range Picker */}
+        <div className="mb-6 no-print">
+          <DateRangePicker onDateChange={(start, end) => {
+            setStartDate(start);
+            setEndDate(end);
+          }} />
         </div>
 
         <TabsContent value="overview">
@@ -140,14 +185,14 @@ export const Dashboard = ({ data, onReset }: DashboardProps) => {
           <ProductsTab
             produtosMaisVendidos={produtosMaisVendidos}
             vendasPorCategoria={vendasPorCategoria}
-            avaliacaoPorProduto={salesData.avaliacaoPorProduto}
+            avaliacaoPorProduto={avaliacaoPorProduto}
           />
         </TabsContent>
 
         <TabsContent value="customers">
           <CustomersTab
             clientesPorGenero={clientesPorGenero}
-            clientesPorIdade={salesData.clientesPorIdade}
+            clientesPorIdade={clientesPorIdade}
             vendasPorEstado={vendasPorEstado}
           />
         </TabsContent>
@@ -155,15 +200,15 @@ export const Dashboard = ({ data, onReset }: DashboardProps) => {
         <TabsContent value="payments">
           <PaymentsTab
             formaPagamento={formaPagamento}
-            parcelamentoMedio={salesData.parcelamentoMedio}
+            parcelamentoMedio={parcelamentoMedio}
           />
         </TabsContent>
 
         <TabsContent value="logistics">
           <LogisticsTab
-            statusEntrega={salesData.statusEntrega}
-            tempoEntregaMedia={salesData.tempoEntregaMedia}
-            avaliacaoPorProduto={salesData.avaliacaoPorProduto}
+            statusEntrega={statusEntrega}
+            tempoEntregaMedia={tempoEntregaMedia}
+            avaliacaoPorProduto={avaliacaoPorProduto}
           />
         </TabsContent>
       </Tabs>

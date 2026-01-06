@@ -18,11 +18,11 @@ export const PaymentsTab = ({ formaPagamento, parcelamentoMedio }: PaymentsTabPr
   }));
 
   const paymentColors = [
-    "hsl(199, 89%, 48%)",
-    "hsl(142, 71%, 45%)",
-    "hsl(38, 92%, 50%)",
-    "hsl(280, 67%, 55%)",
-    "hsl(340, 75%, 55%)",
+    "#3b82f6",  // blue-500
+    "#10b981",  // emerald-500
+    "#f59e0b",  // amber-500
+    "#8b5cf6",  // violet-500
+    "#ec4899",  // pink-500
   ];
 
   return (
