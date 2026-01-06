@@ -6,11 +6,85 @@ import os
 from io import BytesIO
 import tempfile
 from datetime import datetime
+import logging
+from logging.handlers import RotatingFileHandler
+import sys
+from data_validator import validate_data, generate_validation_report
+
+import logging
+from logging.handlers import RotatingFileHandler
+import sys
+
+# ============================================================================
+# CONFIGURAÇÃO DE LOGGING
+# ============================================================================
+
+def setup_logging():
+    """Configura logging estruturado com arquivo e console"""
+    
+    # Criar diretório de logs se não existir
+    log_dir = os.path.join(os.path.dirname(__file__), "..", "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    
+    log_file = os.path.join(log_dir, "app.log")
+    
+    # Criar logger
+    logger = logging.getLogger("analytics_api")
+    logger.setLevel(logging.DEBUG)
+    
+    # Formato detalhado
+    log_format = logging.Formatter(
+        '[%(asctime)s] %(levelname)-8s [%(name)s:%(funcName)s:%(lineno)d] %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    
+    # Handler para arquivo com rotação (10MB, manter 5 backups)
+    file_handler = RotatingFileHandler(
+        log_file,
+        maxBytes=10 * 1024 * 1024,  # 10MB
+        backupCount=5
+    )
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(log_format)
+    logger.addHandler(file_handler)
+    
+    # Handler para console
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(log_format)
+    logger.addHandler(console_handler)
+    
+    return logger
+
+# Inicializar logger
+logger = setup_logging()
 
 app = FastAPI(
     title="Hanami Analytics API",
-    description="API robusta para análise de dados de vendas com upload de arquivos",
-    version="1.0.0"
+    description="API robusta para análise de dados de vendas com upload de arquivos, validação de dados e geração de relatórios",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+    contact={
+        "name": "Analytics Support",
+        "url": "http://localhost:8000",
+        "email": "support@analytics.local"
+    },
+    license_info={
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT"
+    },
+    servers=[
+        {
+            "url": "http://localhost:8000",
+            "description": "Local Development Server"
+        },
+        {
+            "url": "http://api.example.com",
+            "description": "Production Server (when deployed)"
+        }
+    ]
 )
 
 # Configurar CORS
@@ -35,10 +109,10 @@ def load_default_data():
             # Calcular lucro se não existir
             if 'lucro' not in df_default.columns:
                 df_default['lucro'] = df_default['valor_final'] * df_default['margem_lucro']
-            print(f"✅ Dados padrão carregados de: {CSV_PATH}")
+            logger.info(f"✅ Dados padrão carregados de: {CSV_PATH}")
         except FileNotFoundError:
-            print(f"⚠️ Arquivo padrão não encontrado: {CSV_PATH}")
-            print("   Usando modo sem dados padrão - faça upload de um arquivo CSV/XLSX")
+            logger.error(f"❌ Arquivo padrão não encontrado: {CSV_PATH}")
+            logger.info("   Usando modo sem dados padrão - faça upload de um arquivo CSV/XLSX")
             df_default = pd.DataFrame()  # DataFrame vazio
     return df_default
 
@@ -60,16 +134,18 @@ def filter_data_by_date(data: pd.DataFrame, start_date: Optional[str] = None, en
         if start_date:
             start = pd.to_datetime(start_date)
             df = df[df['data_venda'] >= start]
+            logger.debug(f"Filtro de data inicial aplicado: {start_date}")
         
         if end_date:
             end = pd.to_datetime(end_date)
             # Incluir o dia inteiro (até 23:59:59)
             end = end + pd.Timedelta(days=1)
             df = df[df['data_venda'] < end]
+            logger.debug(f"Filtro de data final aplicado: {end_date}")
         
         return df
     except Exception as e:
-        print(f"Erro ao filtrar por data: {e}")
+        logger.error(f"Erro ao filtrar por data: {e}", exc_info=True)
         return data
 
 def parse_csv_file(file_content: bytes) -> pd.DataFrame:
@@ -88,11 +164,14 @@ def parse_xlsx_file(file_content: bytes) -> pd.DataFrame:
 
 @app.on_event("startup")
 async def startup_event():
+    logger.info("=" * 80)
+    logger.info("🚀 INICIANDO HANAMI ANALYTICS API")
+    logger.info("=" * 80)
     load_default_data()
     if not df_default.empty:
-        print("✅ Dados padrão carregados com sucesso!")
+        logger.info(f"✅ Dados padrão carregados com sucesso! ({len(df_default)} registros)")
     else:
-        print("⚠️ API iniciada sem dados padrão. Faça upload de um arquivo para começar.")
+        logger.warning("⚠️ API iniciada sem dados padrão. Faça upload de um arquivo para começar.")
 
 @app.get("/")
 async def root():
@@ -118,50 +197,84 @@ async def upload_file(file: UploadFile = File(...)):
     
     - Suporta CSV e XLSX
     - Detecta automaticamente o tipo de arquivo
-    - Realiza parsing e validação básica
+    - Valida e padroniza dados
     - Armazena em memória para análise
     """
+    logger.info(f"📤 Iniciando upload do arquivo: {file.filename}")
     try:
         file_content = await file.read()
         file_name = file.filename.lower()
+        file_size_mb = len(file_content) / (1024 * 1024)
+        logger.info(f"   Tamanho: {file_size_mb:.2f} MB")
         
         # Detectar tipo de arquivo
         if file_name.endswith('.csv'):
+            logger.debug("Tipo detectado: CSV")
             df_uploaded = parse_csv_file(file_content)
         elif file_name.endswith(('.xlsx', '.xls')):
+            logger.debug("Tipo detectado: XLSX/XLS")
             df_uploaded = parse_xlsx_file(file_content)
         else:
+            logger.warning(f"❌ Tipo de arquivo não suportado: {file_name}")
             raise HTTPException(status_code=400, detail="Tipo de arquivo não suportado. Use CSV ou XLSX")
         
         # Validação básica
         if df_uploaded.empty:
+            logger.warning("❌ Arquivo vazio recebido")
             raise HTTPException(status_code=400, detail="Arquivo vazio")
         
         if len(df_uploaded) > 100000:
+            logger.warning(f"❌ Arquivo muito grande: {len(df_uploaded)} linhas")
             raise HTTPException(status_code=413, detail="Arquivo muito grande (máximo 100.000 linhas)")
+        
+        logger.info(f"🔍 Iniciando validação dos dados...")
+        
+        # ✅ VALIDAR E PADRONIZAR DADOS
+        df_uploaded, validation_report = validate_data(df_uploaded)
+        
+        # Log do relatório de validação
+        report_text = generate_validation_report(validation_report)
+        logger.info(report_text)
+        
+        # Verificar qualidade mínima (mínimo 50% de dados válidos)
+        if validation_report.get_quality_score() < 50:
+            logger.error(f"❌ Qualidade dos dados insuficiente: {validation_report.get_quality_score():.1f}%")
+            raise HTTPException(
+                status_code=422, 
+                detail=f"Qualidade dos dados insuficiente. Score: {validation_report.get_quality_score():.1f}%"
+            )
         
         # Calcular lucro se necessário (usando colunas padrão)
         if 'lucro' not in df_uploaded.columns and 'valor_final' in df_uploaded.columns and 'margem_lucro' in df_uploaded.columns:
             df_uploaded['lucro'] = df_uploaded['valor_final'] * df_uploaded['margem_lucro']
+            logger.debug("Coluna 'lucro' calculada")
         
         # Armazenar dados
         uploaded_data['current'] = df_uploaded
+        logger.info(f"✅ Arquivo '{file.filename}' carregado com sucesso!")
+        logger.info(f"   Registros válidos: {len(df_uploaded)} | Colunas: {len(df_uploaded.columns)}")
+        logger.info(f"   Score de qualidade: {validation_report.get_quality_score():.1f}%")
         
         return {
             "status": "success",
-            "message": f"Arquivo '{file.filename}' carregado com sucesso",
+            "message": f"Arquivo '{file.filename}' carregado e validado com sucesso",
             "rows": len(df_uploaded),
-            "columns": list(df_uploaded.columns)
+            "columns": list(df_uploaded.columns),
+            "quality_score": round(validation_report.get_quality_score(), 1),
+            "validation_report": validation_report.to_dict()
         }
     
     except HTTPException as e:
+        logger.error(f"Erro HTTP no upload: {e.detail}")
         raise e
     except Exception as e:
+        logger.error(f"❌ Erro inesperado ao processar arquivo: {str(e)}", exc_info=True)
         raise HTTPException(status_code=400, detail=f"Erro ao processar arquivo: {str(e)}")
 
 @app.delete("/reset")
 async def reset_data():
     """Reseta os dados enviados e volta aos dados padrão"""
+    logger.info("🔄 Reset de dados solicitado - retornando aos dados padrão")
     uploaded_data.clear()
     return {"status": "success", "message": "Dados resetados para padrão"}
 
@@ -217,10 +330,12 @@ async def get_analysis():
 @app.get("/kpis")
 async def get_kpis(start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
     """Retorna KPIs principais - Algoritmo de análise"""
+    logger.info(f"📊 Solicitação de KPIs (start_date={start_date}, end_date={end_date})")
     data = get_current_data()
     data = filter_data_by_date(data, start_date, end_date)
     
     if data.empty:
+        logger.warning("⚠️ Nenhum dado disponível para período selecionado")
         return {
             "total_vendas": 0,
             "faturamento_total": 0,
@@ -231,39 +346,46 @@ async def get_kpis(start_date: Optional[str] = Query(None), end_date: Optional[s
             "avaliacao_media": 0
         }
     
-    kpis = {
-        "total_vendas": int(len(data)),
-    }
-    
-    # Usar colunas específicas do dataset
-    if 'valor_final' in data.columns:
-        kpis["faturamento_total"] = float(data['valor_final'].sum())
-        kpis["ticket_medio"] = float(data['valor_final'].mean())
-    
-    if 'valor_final' in data.columns and 'custo_produto' in data.columns and 'quantidade' in data.columns:
-        # Calcular lucro: (valor_final - custo_total) por linha
-        lucro = (data['valor_final'] - (data['custo_produto'] * data['quantidade'])).sum()
-        kpis["lucro_total"] = float(lucro)
-        kpis["margem_lucro_media"] = float((lucro / data['valor_final'].sum() * 100)) if data['valor_final'].sum() > 0 else 0
-    elif 'margem_lucro' in data.columns:
-        kpis["lucro_total"] = float((data['valor_final'] * data['margem_lucro']).sum()) if 'valor_final' in data.columns else 0
-        kpis["margem_lucro_media"] = float(data['margem_lucro'].mean() * 100)
-    
-    if 'cliente_id' in data.columns:
-        kpis["clientes_unicos"] = int(data['cliente_id'].nunique())
-    
-    if 'avaliacao_produto' in data.columns:
-        kpis["avaliacao_media"] = float(data['avaliacao_produto'].mean())
-    
-    return kpis
+    try:
+        kpis = {
+            "total_vendas": int(len(data)),
+        }
+        
+        # Usar colunas específicas do dataset
+        if 'valor_final' in data.columns:
+            kpis["faturamento_total"] = float(data['valor_final'].sum())
+            kpis["ticket_medio"] = float(data['valor_final'].mean())
+        
+        if 'valor_final' in data.columns and 'custo_produto' in data.columns and 'quantidade' in data.columns:
+            # Calcular lucro: (valor_final - custo_total) por linha
+            lucro = (data['valor_final'] - (data['custo_produto'] * data['quantidade'])).sum()
+            kpis["lucro_total"] = float(lucro)
+            kpis["margem_lucro_media"] = float((lucro / data['valor_final'].sum() * 100)) if data['valor_final'].sum() > 0 else 0
+        elif 'margem_lucro' in data.columns:
+            kpis["lucro_total"] = float((data['valor_final'] * data['margem_lucro']).sum()) if 'valor_final' in data.columns else 0
+            kpis["margem_lucro_media"] = float(data['margem_lucro'].mean() * 100)
+        
+        if 'cliente_id' in data.columns:
+            kpis["clientes_unicos"] = int(data['cliente_id'].nunique())
+        
+        if 'avaliacao_produto' in data.columns:
+            kpis["avaliacao_media"] = float(data['avaliacao_produto'].mean())
+        
+        logger.info(f"✅ KPIs calculados: {len(data)} registros analisados")
+        return kpis
+    except Exception as e:
+        logger.error(f"❌ Erro ao calcular KPIs: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao calcular KPIs: {str(e)}")
 
 @app.get("/sales-by-month")
 async def get_sales_by_month(start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
     """Retorna vendas agrupadas por mês - Algoritmo de análise temporal"""
+    logger.info(f"📅 Análise de vendas por mês (start_date={start_date}, end_date={end_date})")
     data = get_current_data()
     data = filter_data_by_date(data, start_date, end_date)
     
     if data.empty:
+        logger.warning("⚠️ Nenhum dado disponível para análise de vendas por mês")
         return []
     
     try:
@@ -284,37 +406,42 @@ async def get_sales_by_month(start_date: Optional[str] = Query(None), end_date: 
             lucro_monthly = df_copy.groupby('mes')['lucro'].sum().reset_index()
             monthly = monthly.merge(lucro_monthly, on='mes')
         
+        logger.info(f"✅ Análise temporal concluída: {len(monthly)} períodos encontrados")
         return monthly.to_dict('records')
     except Exception as e:
-        print(f"Erro ao agrupar por mês: {e}")
-        return []
+        logger.error(f"❌ Erro ao agrupar por mês: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao agrupar por mês: {str(e)}")
 
 @app.get("/sales-by-category")
 async def get_sales_by_category(start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
     """Retorna vendas por categoria - Algoritmo de segmentação"""
+    logger.info(f"🏷️  Análise por categoria (start_date={start_date}, end_date={end_date})")
     data = get_current_data()
     data = filter_data_by_date(data, start_date, end_date)
     
     if data.empty or 'categoria' not in data.columns:
+        logger.warning("⚠️ Nenhum dado disponível para análise por categoria")
         return []
     
     try:
         category = data.groupby('categoria')['valor_final'].sum().reset_index()
         category.columns = ['name', 'value']
         category = category.sort_values('value', ascending=False)
-        
+        logger.info(f"✅ Análise por categoria: {len(category)} categorias encontradas")
         return category.to_dict('records')
     except Exception as e:
-        print(f"Erro ao agrupar por categoria: {e}")
-        return []
+        logger.error(f"❌ Erro ao agrupar por categoria: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao agrupar por categoria: {str(e)}")
 
 @app.get("/top-products")
 async def get_top_products(limit: int = 10, start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
     """Retorna produtos mais vendidos - Algoritmo de ranking"""
+    logger.info(f"🏆 Top produtos (limit={limit}, start_date={start_date}, end_date={end_date})")
     data = get_current_data()
     data = filter_data_by_date(data, start_date, end_date)
     
     if data.empty or 'nome_produto' not in data.columns:
+        logger.warning("⚠️ Nenhum dado disponível para ranking de produtos")
         return []
     
     try:
@@ -335,29 +462,31 @@ async def get_top_products(limit: int = 10, start_date: Optional[str] = Query(No
         
         products.columns = ['name', 'quantidade', 'valor_total', 'transacoes', 'lucro']
         products = products.sort_values('quantidade', ascending=False).head(limit)
-        
+        logger.info(f"✅ Ranking de produtos: {len(products)} produtos encontrados")
         return products.to_dict('records')
     except Exception as e:
-        print(f"Erro ao listar produtos: {e}")
-        return []
+        logger.error(f"❌ Erro ao listar produtos: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao listar produtos: {str(e)}")
 
 @app.get("/customers-by-gender")
 async def get_customers_by_gender(start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
     """Retorna distribuição de clientes por gênero - Algoritmo de segmentação"""
+    logger.info(f"👥 Análise por gênero (start_date={start_date}, end_date={end_date})")
     data = get_current_data()
     data = filter_data_by_date(data, start_date, end_date)
     
     if data.empty or 'genero_cliente' not in data.columns:
+        logger.warning("⚠️ Nenhum dado disponível para análise por gênero")
         return []
     
     try:
         gender = data.groupby('genero_cliente').size().reset_index(name='value')
         gender.columns = ['name', 'value']
-        
+        logger.info(f"✅ Análise por gênero: {len(gender)} grupos encontrados")
         return gender.to_dict('records')
     except Exception as e:
-        print(f"Erro ao agrupar por gênero: {e}")
-        return []
+        logger.error(f"❌ Erro ao agrupar por gênero: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao agrupar por gênero: {str(e)}")
 
 @app.get("/sales-by-state")
 async def get_sales_by_state(limit: int = 10, start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):

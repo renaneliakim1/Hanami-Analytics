@@ -48,19 +48,54 @@ export const LogisticsTab = ({ statusEntrega, tempoEntregaMedia, avaliacaoPorPro
         </div>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PieChartComponent
-          data={statusEntrega}
-          title="Status das Entregas"
-        />
+      {/* Charts em 3 colunas - Sem espaço vazio */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="col-span-1">
+          <PieChartComponent
+            data={statusEntrega}
+            title="Status das Entregas"
+          />
+        </div>
+        <div className="col-span-1">
+          <BarChartComponent
+            data={avaliacaoPorProduto.slice(0, 6)}
+            title="Produtos - Avaliação Baixa"
+            dataKey="avaliacao"
+            colors={["hsl(0, 84%, 60%)"]}
+          />
+        </div>
+        <div className="col-span-1">
+          <div className="kpi-card h-full flex flex-col justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-4">Resumo de Avaliações</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Excelente (4-5):</span>
+                  <span className="font-semibold text-green-600">{avaliacaoPorProduto.filter((p: any) => p.avaliacao >= 4).length}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Bom (3-4):</span>
+                  <span className="font-semibold text-blue-600">{avaliacaoPorProduto.filter((p: any) => p.avaliacao >= 3 && p.avaliacao < 4).length}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Ruim (&lt;3):</span>
+                  <span className="font-semibold text-red-600">{avaliacaoPorProduto.filter((p: any) => p.avaliacao < 3).length}</span>
+                </div>
+                <div className="border-t pt-3 mt-3 flex justify-between items-center">
+                  <span className="text-xs font-medium text-muted-foreground">Média:</span>
+                  <span className="text-lg font-bold">{(avaliacaoPorProduto.reduce((sum: number, p: any) => sum + p.avaliacao, 0) / avaliacaoPorProduto.length).toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Produtos com Menor Avaliação - Full width */}
+      {/* Todos os Produtos - Full width */}
       <div className="w-full min-w-0">
         <BarChartComponent
           data={avaliacaoPorProduto}
-          title="Produtos com Menor Avaliação"
+          title="Todos os Produtos - Avaliação"
           dataKey="avaliacao"
           horizontal
           colors={["hsl(0, 84%, 60%)", "hsl(38, 92%, 50%)", "hsl(142, 71%, 45%)"]}
