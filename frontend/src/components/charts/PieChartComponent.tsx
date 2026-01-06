@@ -43,15 +43,19 @@ export const PieChartComponent = ({ data, title, isCurrency = false }: PieChartC
     );
   }
 
+  // Calcular altura da legenda baseado no número de itens
+  const legendHeight = Math.max(36, Math.ceil(data.length / 3) * 20 + 16);
+  const chartHeight = Math.max(250, 400 - legendHeight);
+
   return (
-    <div className="chart-container h-[400px]">
+    <div className="chart-container h-auto min-h-[400px] flex flex-col overflow-hidden">
       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">{title}</h3>
-      <ResponsiveContainer width="100%" height="85%">
+      <ResponsiveContainer width="100%" height={chartHeight}>
         <PieChart>
           <Pie
             data={data}
             cx="50%"
-            cy="50%"
+            cy="45%"
             innerRadius={60}
             outerRadius={100}
             paddingAngle={2}
@@ -98,8 +102,12 @@ export const PieChartComponent = ({ data, title, isCurrency = false }: PieChartC
           />
           <Legend 
             verticalAlign="bottom" 
-            height={36}
-            formatter={(value) => <span className="text-muted-foreground">{value}</span>}
+            height={legendHeight}
+            wrapperStyle={{
+              paddingTop: '10px',
+              overflow: 'visible'
+            }}
+            formatter={(value) => <span className="text-xs sm:text-sm text-muted-foreground">{value}</span>}
           />
         </PieChart>
       </ResponsiveContainer>

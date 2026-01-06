@@ -57,21 +57,30 @@ export const BarChartComponent = ({
     );
   }
 
+  // Calcular altura dinamicamente baseado no número de barras
+  const chartHeight = Math.max(300, Math.min(600, data.length * 35 + 100));
+  // Margem esquerda responsiva: máximo de 200px em desktop, reduzido para mobile
+  const maxLabelWidth = Math.max(...data.map((d: any) => (d.name || '').toString().length)) * 7;
+  const leftMargin = horizontal ? Math.max(80, Math.min(200, maxLabelWidth)) : 0;
+
   return (
-    <div className="chart-container h-[400px]">
+    <div className="w-full chart-container flex flex-col overflow-hidden">
       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">{title}</h3>
-      <ResponsiveContainer width="100%" height="85%">
+      <div className="w-full flex-1">
+        <ResponsiveContainer width="100%" height={chartHeight}>
         <BarChart 
           data={data} 
           layout={horizontal ? "vertical" : "horizontal"}
+          margin={horizontal ? { top: 5, right: 30, left: leftMargin, bottom: 5 } : { top: 5, right: 30, left: 0, bottom: 80 }}
+          barCategoryGap={horizontal ? "20%" : "5%"}
         >
-          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+          <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={!horizontal} />
           {horizontal ? (
             <>
               <XAxis 
                 type="number" 
                 className="text-muted-foreground"
-                fontSize={12}
+                fontSize={10}
                 tickLine={false}
                 tickFormatter={formatValue}
               />
@@ -79,9 +88,10 @@ export const BarChartComponent = ({
                 type="category" 
                 dataKey="name" 
                 className="text-muted-foreground"
-                fontSize={11}
+                fontSize={9}
                 tickLine={false}
-                width={100}
+                width={leftMargin - 10}
+                interval={0}
               />
             </>
           ) : (
@@ -89,15 +99,16 @@ export const BarChartComponent = ({
               <XAxis 
                 dataKey="name" 
                 className="text-muted-foreground"
-                fontSize={11}
+                fontSize={10}
                 tickLine={false}
                 angle={-45}
                 textAnchor="end"
                 height={80}
+                interval={data.length > 5 ? Math.ceil(data.length / 5) - 1 : 0}
               />
               <YAxis 
                 className="text-muted-foreground"
-                fontSize={12}
+                fontSize={11}
                 tickLine={false}
                 tickFormatter={formatValue}
               />
@@ -126,7 +137,7 @@ export const BarChartComponent = ({
           />
           <Bar 
             dataKey={dataKey} 
-            radius={[4, 4, 0, 0]}
+            radius={horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}
             isAnimationActive={true}
             animationDuration={1000}
           >
@@ -138,7 +149,8 @@ export const BarChartComponent = ({
             ))}
           </Bar>
         </BarChart>
-      </ResponsiveContainer>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };

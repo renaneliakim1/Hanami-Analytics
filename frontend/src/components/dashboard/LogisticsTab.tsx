@@ -54,6 +54,10 @@ export const LogisticsTab = ({ statusEntrega, tempoEntregaMedia, avaliacaoPorPro
           data={statusEntrega}
           title="Status das Entregas"
         />
+      </div>
+
+      {/* Produtos com Menor Avaliação - Full width */}
+      <div className="w-full min-w-0">
         <BarChartComponent
           data={avaliacaoPorProduto}
           title="Produtos com Menor Avaliação"

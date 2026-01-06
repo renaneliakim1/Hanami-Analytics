@@ -37,6 +37,45 @@
   padding: 2em;
 }
 
+.chart-container {
+  width: 100%;
+  overflow: hidden;
+}
+
+.recharts-wrapper {
+  overflow: visible !important;
+}
+
+.recharts-surface {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.recharts-legend-wrapper {
+  padding-bottom: 16px !important;
+}
+
+.recharts-legend-item {
+  white-space: normal;
+  word-break: break-word;
+  padding: 4px 8px;
+}
+
+@media (max-width: 768px) {
+  .chart-container {
+    padding: 0;
+  }
+
+  .recharts-legend {
+    font-size: 12px;
+  }
+
+  .recharts-legend-item {
+    padding: 2px 4px;
+    margin: 2px 0;
+  }
+}
+
 .read-the-docs {
   color: #888;
 }
