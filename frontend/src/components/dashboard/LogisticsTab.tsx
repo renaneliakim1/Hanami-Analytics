@@ -60,7 +60,7 @@ export const LogisticsTab = ({ statusEntrega, tempoEntregaMedia, avaliacaoPorPro
           <BarChartComponent
             data={avaliacaoPorProduto.slice(0, 6)}
             title="Produtos - Avaliação Baixa"
-            dataKey="avaliacao"
+            dataKey="value"
             colors={["hsl(0, 84%, 60%)"]}
           />
         </div>
@@ -71,19 +71,19 @@ export const LogisticsTab = ({ statusEntrega, tempoEntregaMedia, avaliacaoPorPro
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-muted-foreground">Excelente (4-5):</span>
-                  <span className="font-semibold text-green-600">{avaliacaoPorProduto.filter((p: any) => p.avaliacao >= 4).length}</span>
+                  <span className="font-semibold text-green-600">{avaliacaoPorProduto.filter((p: any) => p.value >= 4).length}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-muted-foreground">Bom (3-4):</span>
-                  <span className="font-semibold text-blue-600">{avaliacaoPorProduto.filter((p: any) => p.avaliacao >= 3 && p.avaliacao < 4).length}</span>
+                  <span className="font-semibold text-blue-600">{avaliacaoPorProduto.filter((p: any) => p.value >= 3 && p.value < 4).length}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-muted-foreground">Ruim (&lt;3):</span>
-                  <span className="font-semibold text-red-600">{avaliacaoPorProduto.filter((p: any) => p.avaliacao < 3).length}</span>
+                  <span className="font-semibold text-red-600">{avaliacaoPorProduto.filter((p: any) => p.value < 3).length}</span>
                 </div>
                 <div className="border-t pt-3 mt-3 flex justify-between items-center">
                   <span className="text-xs font-medium text-muted-foreground">Média:</span>
-                  <span className="text-lg font-bold">{(avaliacaoPorProduto.reduce((sum: number, p: any) => sum + p.avaliacao, 0) / avaliacaoPorProduto.length).toFixed(2)}</span>
+                  <span className="text-lg font-bold">{(avaliacaoPorProduto.reduce((sum: number, p: any) => sum + p.value, 0) / avaliacaoPorProduto.length).toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -96,7 +96,7 @@ export const LogisticsTab = ({ statusEntrega, tempoEntregaMedia, avaliacaoPorPro
         <BarChartComponent
           data={avaliacaoPorProduto}
           title="Todos os Produtos - Avaliação"
-          dataKey="avaliacao"
+          dataKey="value"
           horizontal
           colors={["hsl(0, 84%, 60%)", "hsl(38, 92%, 50%)", "hsl(142, 71%, 45%)"]}
         />

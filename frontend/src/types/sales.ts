@@ -9,21 +9,25 @@ export interface SalesRecord {
   renda_estimada: number;
   produto_id: string;
   nome_produto: string;
-  categoria_produto: string;
+  categoria_produto?: string;
+  categoria?: string;
   preco_unitario: number;
   custo_produto: number;
   quantidade: number;
   data_venda: string;
-  valor_total: number;
-  lucro: number;
-  desconto_aplicado: number;
+  valor_total?: number;
+  valor_final?: number;
+  lucro?: number;
+  margem_lucro?: number;
+  desconto_aplicado?: number;
   forma_pagamento: string;
   parcelas: number;
-  status_entrega: string;
-  tempo_entrega_dias: number;
+  status_entrega?: string;
+  regiao?: string;
+  tempo_entrega_dias?: number;
   avaliacao_produto: number;
   subtotal?: number;
-  margem_lucro?: number;
+  [key: string]: any;
 }
 
 export interface KPIData {

@@ -24,7 +24,7 @@ export interface APICategory {
   value: number;
 }
 
-export const useApiReport = (startDate?: string, endDate?: string) => {
+export const useApiReport = (startDate?: string, endDate?: string, region?: string) => {
   const [kpis, setKpis] = useState<APIKPIs | null>(null);
   const [monthlySales, setMonthlySales] = useState<APIMonthlySales[]>([]);
   const [salesByCategory, setSalesByCategory] = useState<APICategory[]>([]);
@@ -46,14 +46,15 @@ export const useApiReport = (startDate?: string, endDate?: string) => {
         setLoading(true);
         setError(null);
 
-        // Construir query params de data
+        // Construir query params de data e região
         const params = new URLSearchParams();
         if (startDate) params.append('start_date', startDate);
         if (endDate) params.append('end_date', endDate);
+        if (region) params.append('region', region);
         const queryString = params.toString();
         const suffix = queryString ? `?${queryString}` : '';
 
-        console.log('📡 Buscando dados com filtro de datas:', { startDate, endDate, suffix });
+        console.log('📡 Buscando dados com filtro:', { startDate, endDate, region, suffix });
 
         // Carregar todos os dados em paralelo
         const [
@@ -153,7 +154,7 @@ export const useApiReport = (startDate?: string, endDate?: string) => {
     };
 
     fetchReportData();
-  }, [startDate, endDate]);
+  }, [startDate, endDate, region]);
 
   return {
     kpis,

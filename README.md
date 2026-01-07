@@ -1,164 +1,321 @@
-# Hanami Analytics
+# 📊 Hanami Analytics
 
-## Project info
+Dashboard inteligente para análise e visualização de dados de vendas com backend FastAPI.
 
-A comprehensive dashboard application for data analysis and visualization with FastAPI backend.
+**Status**: ✅ Produção | **Última atualização**: Janeiro 2026
 
-## Tecnologias
+## 🚀 Funcionalidades Principais
+
+- **6 Dashboards Completos**: Visão Geral, Vendas, Produtos, Clientes, Pagamentos, Logística
+- **15+ Gráficos Interativos**: Área, Barras, Pizza, com tooltips e responsivos
+- **Filtros Avançados**: Data (com calendários), Região (6 opções), Atalhos rápidos
+- **Tema Escuro/Claro**: Alternância automática com persistência
+- **Impressão em PDF**: Geração de relatórios formatados
+- **API REST**: Endpoints para integração externa
+- **Otimizado para Ultrawide**: Suporte completo para monitores 29" e maiores
+- **Dados em Português**: Formatação de moeda (R$), datas (dd/MM/yyyy) e localização pt-BR
+
+## 🛠️ Stack Tecnológico
 
 ### Frontend
-- Vite + React + TypeScript
-- Recharts (gráficos)
-- shadcn-ui + Tailwind CSS
-- Next Themes (tema escuro/claro)
+- **React 18** + TypeScript + Vite
+- **Recharts** - Gráficos responsivos e interativos
+- **shadcn-ui** - Componentes acessíveis
+- **Tailwind CSS** - Estilização moderna
+- **date-fns** - Manipulação de datas em português
+- **Next Themes** - Gerenciamento de tema escuro/claro
 
-### Backend (API)
-- FastAPI
-- Pandas
-- Uvicorn
+### Backend
+- **FastAPI** - Framework web de alta performance
+- **Pandas** - Processamento de dados
+- **Uvicorn** - Servidor ASGI
 
-## Como executar o projeto
+## 📦 Instalação Rápida
 
-### 1. Backend (API FastAPI)
+### Pré-requisitos
+- Node.js 16+ e npm
+- Python 3.8+
+
+### Backend (FastAPI)
 
 ```bash
-# Navegar para pasta da API
 cd api
-
-# Criar ambiente virtual
 python -m venv venv
 
-# Ativar ambiente virtual (Windows)
+# Windows
 venv\Scripts\activate
+# macOS/Linux
+source venv/bin/activate
 
-# Instalar dependências
 pip install -r requirements.txt
-
-# Executar API
 python main.py
 ```
 
-A API estará disponível em: http://localhost:8000
+**API disponível em**: http://localhost:8000  
+**Documentação interativa**: http://localhost:8000/docs
 
-Documentação da API: http://localhost:8000/docs
-
-### 2. Frontend (React + Vite)
+### Frontend (React + Vite)
 
 ```bash
-# Em outro terminal, navegar para pasta do frontend
 cd frontend
-
-# Instalar dependências
 npm install
-
-# Executar frontend
 npm run dev
 ```
 
-O frontend estará disponível em: http://localhost:8081
+**Frontend disponível em**: http://localhost:8081
 
-## Estrutura do Projeto
+## 📂 Estrutura do Projeto
 
 ```
 analyze-joy-hub/
-├── api/                  # Backend FastAPI
-│   ├── main.py          # API principal
-│   ├── requirements.txt # Dependências Python
-│   └── README.md        # Docs da API
-├── frontend/            # Frontend React
-│   ├── public/         # Arquivos estáticos
-│   │   └── vendas_ficticias_10000_linhas.csv
-│   ├── src/            # Código React
+├── api/                          # Backend FastAPI
+│   ├── main.py                  # Endpoints da API
+│   ├── data_validator.py        # Validação de dados
+│   ├── requirements.txt         # Dependências Python
+│   └── README.md               # Documentação da API
+│
+├── frontend/                     # Frontend React
+│   ├── src/
 │   │   ├── components/
+│   │   │   ├── Dashboard.tsx            # Componente principal
+│   │   │   ├── DateRangePicker.tsx      # Filtros (data/região)
+│   │   │   ├── dashboard/
+│   │   │   │   ├── OverviewTab.tsx      # Visão Geral
+│   │   │   │   ├── SalesTab.tsx         # Vendas
+│   │   │   │   ├── ProductsTab.tsx      # Produtos
+│   │   │   │   ├── CustomersTab.tsx     # Clientes
+│   │   │   │   ├── PaymentsTab.tsx      # Pagamentos
+│   │   │   │   └── LogisticsTab.tsx     # Logística
+│   │   │   └── charts/                  # Componentes de gráficos
 │   │   ├── hooks/
-│   │   ├── pages/
-│   │   └── types/
+│   │   │   ├── useSalesData.ts          # Hook de dados originais
+│   │   │   ├── useFilteredSalesData.ts  # Hook de filtros
+│   │   │   └── useApiReport.ts          # Hook de API
+│   │   ├── types/
+│   │   │   └── sales.ts                 # Tipos TypeScript
+│   │   ├── utils/
+│   │   │   └── csvParser.ts             # Formatação de valores
+│   │   └── App.tsx
+│   ├── public/
+│   │   └── vendas_ficticias_10000_linhas.csv
 │   ├── package.json
-│   └── vite.config.ts
-└── README.md
+│   ├── tsconfig.json
+│   ├── vite.config.ts
+│   └── tailwind.config.ts
+│
+├── docs/                         # Documentação detalhada
+│   ├── API_DOCUMENTATION.md
+│   ├── ARCHITECTURE.md
+│   ├── DATA_VALIDATION.md
+│   ├── INSTALLATION.md
+│   └── TROUBLESHOOTING.md
+│
+├── logs/                         # Logs da aplicação
+├── README.md                     # Este arquivo
+└── SWAGGER.md                    # Documentação OpenAPI
 ```
 
-## Funcionalidades
+## 📊 Dashboards Disponíveis
 
-- 📊 **6 Dashboards**: Visão Geral, Vendas, Produtos, Clientes, Pagamentos, Logística
-- 📈 **Gráficos Interativos**: Área, Barras, Pizza com tooltips
-- 🌙 **Tema Escuro/Claro**: Alternância automática
-- 🖨️ **Impressão**: Geração de relatórios em PDF
-- 🚀 **API REST**: Endpoints para todos os dados
-- 📝 **10.000 registros**: Dados fictícios de vendas
+### 1️⃣ **Visão Geral**
+- KPIs principais (Faturamento, Lucro, Vendas, Clientes)
+- Gráfico de vendas mensais
+- Vendas por categoria
+- Ticket médio
 
-## API Endpoints
+### 2️⃣ **Vendas**
+- Evolução mensal de faturamento e lucro
+- Análise de tendências
+- Dados exportáveis
 
-- `GET /` - Informações da API
-- `GET /sales` - Vendas (paginado)
-- `GET /kpis` - KPIs principais
-- `GET /sales-by-month` - Vendas mensais
-- `GET /sales-by-category` - Por categoria
-- `GET /top-products` - Top produtos
-- `GET /customers-by-gender` - Por gênero
-- `GET /sales-by-state` - Por estado
-- `GET /payment-methods` - Formas de pagamento
+### 3️⃣ **Produtos**
+- Top 10 produtos mais vendidos
+- Receita por categoria
+- Avaliações de produtos
+- Análise de rentabilidade
 
-## How can I edit this code?
+### 4️⃣ **Clientes**
+- Distribuição por gênero
+- Faixa etária dos clientes
+- Vendas por estado
+- Segmentação geográfica
 
-There are several ways of editing your application.
+### 5️⃣ **Pagamentos**
+- Formas de pagamento mais usadas
+- Análise de parcelamentos
+- Valor médio por método
+- Distribuição de transações
 
-**Use your preferred IDE**
+### 6️⃣ **Logística**
+- Status de entregas
+- Tempo médio de entrega
+- Avaliações de produtos
+- Acompanhamento de entregas
 
-You can clone this repo and push changes.
+## 🔍 Sistema de Filtros
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Filtros Disponíveis
 
-Follow these steps:
+1. **Data Range** 📅
+   - Calendários interativos (data inicial e final)
+   - Seletores de mês/ano para navegação rápida
+   - Atalhos: "Últimos 7 dias", "Últimos 30 dias", etc
+   - Formatação em padrão brasileiro (dd/MM/yyyy)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+2. **Região** 🗺️
+   - Sudeste, Nordeste, Sul, Centro-Oeste, Norte
+   - Filtro combinável com data
+   - Atualização em tempo real de todos os gráficos
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Características Especiais
 
-# Step 3: Install frontend dependencies.
-cd frontend
-npm i
+- ✨ **Ultrawide Ready**: Otimizado para monitores 29" e maiores
+  - Layout responsivo com calendários lado a lado
+  - Scroll vertical para popover com conteúdo extenso
+  - Botões "Aplicar" e "Resetar" sempre acessíveis
+  
+- 🚀 **Performance**: Usememo para otimização de cálculos
+- 🎨 **Responsivo**: Adapta-se a qualquer tamanho de tela
+- 🌙 **Dark Mode**: Suporte completo com cores otimizadas
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+## 🔌 API REST
+
+### Endpoints Principais
+
+```
+GET  /                          # Info da API
+GET  /sales                     # Vendas (paginado)
+GET  /kpis                      # KPIs principais
+GET  /sales-by-month           # Vendas mensais
+GET  /sales-by-category        # Por categoria
+GET  /top-products             # Top 10 produtos
+GET  /customers-by-gender      # Por gênero
+GET  /sales-by-state           # Por estado
+GET  /payment-methods          # Formas de pagamento
+GET  /customer-by-age          # Por faixa etária
+GET  /delivery-status          # Status de entregas
+GET  /product-ratings          # Avaliações
+GET  /average-delivery-time    # Tempo médio entrega
 ```
 
-**Edit a file directly in GitHub**
+Documentação completa em: http://localhost:8000/docs (Swagger UI)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 💡 Guia de Uso Rápido
 
-**Use GitHub Codespaces**
+### Primeiro Acesso
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+1. Inicie o backend e frontend conforme instruções acima
+2. Abra http://localhost:8081 no navegador
+3. Explore os 6 dashboards na barra lateral
+4. Use os filtros para análises específicas
 
-## What technologies are used for this project?
+### Filtros
 
-This project is built with:
+- **Data**: Clique no calendário, selecione mês/ano ou use atalhos
+- **Região**: Escolha uma região ou deixe "Todas as regiões"
+- **Aplicar**: Confirma os filtros
+- **Resetar**: Remove todos os filtros
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Impressão
 
-## How can I deploy this project?
+- Clique em "Imprimir" para gerar PDF do dashboard atual
+- Navegue pelas abas e imprima cada uma conforme necessário
 
-You can deploy this project to any static hosting service like Vercel, Netlify, or GitHub Pages.
+### Tema
 
-To build for production:
+- Use o botão de sol/lua no topo para alternar entre temas claro/escuro
 
-```sh
+## 🚀 Build para Produção
+
+### Frontend
+
+```bash
 cd frontend
 npm run build
 ```
 
-The build output will be in the `frontend/dist` folder.
+Saída em: `frontend/dist/`
+
+### Deploy
+
+Pode ser feito em:
+- **Vercel** (recomendado para React)
+- **Netlify**
+- **GitHub Pages**
+- **Seu servidor próprio** (qualquer host de arquivos estáticos)
+
+O backend FastAPI pode ser deployado em qualquer servidor Python.
+
+## 📝 Como Editar o Código
+
+### Usando IDE Local
+
+```bash
+git clone https://github.com/renaneliakim1/analyze-joy-hub.git
+cd analyze-joy-hub
+cd frontend
+npm install
+npm run dev
+```
+
+### Estrutura de Componentes
+
+```
+src/components/
+├── Dashboard.tsx              # Orquestrador principal
+├── DateRangePicker.tsx        # Filtros avançados
+├── dashboard/
+│   ├── OverviewTab.tsx        # KPIs e visão geral
+│   ├── SalesTab.tsx           # Gráficos de vendas
+│   ├── ProductsTab.tsx        # Análise de produtos
+│   ├── CustomersTab.tsx       # Dados de clientes
+│   ├── PaymentsTab.tsx        # Formas de pagamento
+│   └── LogisticsTab.tsx       # Entregas e logística
+└── charts/
+    ├── AreaChartComponent.tsx
+    ├── BarChartComponent.tsx
+    └── PieChartComponent.tsx
+```
+
+## 🐛 Troubleshooting
+
+### Gráficos não carregam
+- Verifique se a API está rodando (http://localhost:8000)
+- Abra DevTools (F12) e procure por erros no Console
+- Verifique se os filtros estão corretos
+
+### Filtros não funcionam
+- Limpe o cache (Ctrl+Shift+Delete)
+- Recarregue a página (F5)
+- Verifique se as datas estão no formato correto
+
+### Performance lenta
+- Reduza o período de datas (menos registros)
+- Feche outras abas do navegador
+- Verifique se há muitos gráficos abertos
+
+Para mais detalhes, consulte [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
+
+## 📚 Documentação Detalhada
+
+- [API Documentation](docs/API_DOCUMENTATION.md) - Endpoints e schemas
+- [Architecture](docs/ARCHITECTURE.md) - Estrutura técnica
+- [Installation Guide](docs/INSTALLATION.md) - Guia completo de instalação
+- [Data Validation](docs/DATA_VALIDATION.md) - Validação de dados
+- [Frontend Documentation](docs/FRONTEND_DOCUMENTATION.md) - Componentes React
+
+## 📄 Licença
+
+Projeto de código aberto. Sinta-se livre para usar, modificar e distribuir.
+
+## 👥 Contribuições
+
+Contribuições são bem-vindas! Abra uma issue ou pull request.
+
+## 📧 Contato
+
+Para dúvidas ou sugestões, entre em contato através do repositório GitHub.
+
+---
+
+**Desenvolvido com ❤️ usando React, FastAPI e Tailwind CSS**

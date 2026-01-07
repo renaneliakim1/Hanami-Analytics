@@ -9,12 +9,12 @@ interface PaymentsTabProps {
 export const PaymentsTab = ({ formaPagamento, parcelamentoMedio }: PaymentsTabProps) => {
   const pagamentoQuantidade = formaPagamento.map(p => ({
     name: p.name,
-    value: p.quantidade
+    value: p.value
   }));
 
   const pagamentoValorMedio = formaPagamento.map(p => ({
     name: p.name,
-    value: p.valor_medio || 0
+    value: p.revenue || 0
   }));
 
   const paymentColors = [

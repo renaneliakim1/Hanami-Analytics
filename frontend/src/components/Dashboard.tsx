@@ -2,6 +2,7 @@ import { BarChart3, TrendingUp, Package, Users, CreditCard, Truck, Upload, Print
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SalesRecord } from "@/types/sales";
 import { useSalesData } from "@/hooks/useSalesData";
+import { useFilteredSalesData } from "@/hooks/useFilteredSalesData";
 import { useApiReport } from "@/hooks/useApiReport";
 import { OverviewTab } from "./dashboard/OverviewTab";
 import { SalesTab } from "./dashboard/SalesTab";
@@ -13,6 +14,8 @@ import { DateRangePicker } from "./DateRangePicker";
 import { ThemeToggle } from "./ThemeToggle";
 import { formatNumber, formatCurrency } from "@/utils/csvParser";
 import { useState, useEffect } from "react";
+import { format, parse } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface DashboardProps {
   data: SalesRecord[];
@@ -23,70 +26,142 @@ interface DashboardProps {
 export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) => {
   const [startDate, setStartDate] = useState<string>(initialDateRange?.startDate || "");
   const [endDate, setEndDate] = useState<string>(initialDateRange?.endDate || "");
+  const [selectedRegion, setSelectedRegion] = useState<string>("");
   
-  // Usar dados locais se disponíveis, senão carregar da API
+  // Dados originais sem filtro
   const salesData = useSalesData(data);
-  const apiData = useApiReport(startDate || undefined, endDate || undefined);
   
-  // Determinar se há filtro de data ativo
+  // Dados filtrados por data e região
+  const filteredSalesData = useFilteredSalesData(data, selectedRegion || undefined, startDate || undefined, endDate || undefined);
+  
+  // Dados da API (quando disponível)
+  const apiData = useApiReport(startDate || undefined, endDate || undefined, selectedRegion || undefined);
+  
+  // Determinar se há filtro ativo (data ou região)
   const hasDateFilter = startDate || endDate;
+  const hasRegionFilter = selectedRegion;
+  const hasAnyFilter = hasDateFilter || hasRegionFilter;
 
-  // Priorizar dados da API se carregados, senão usar dados locais (apenas quando não há filtro)
-  const kpis = apiData.kpis ? {
-    faturamentoTotal: apiData.kpis.faturamento_total || 0,
-    lucroTotal: apiData.kpis.lucro_total || 0,
-    quantidadeVendas: apiData.kpis.total_vendas || 0,
-    clientesUnicos: apiData.kpis.clientes_unicos || 0,
-    ticketMedio: apiData.kpis.ticket_medio || 0,
-    avaliacaoMedia: apiData.kpis.avaliacao_media || 0,
-  } : (hasDateFilter ? { faturamentoTotal: 0, lucroTotal: 0, quantidadeVendas: 0, clientesUnicos: 0, ticketMedio: 0, avaliacaoMedia: 0 } : salesData.kpis);
+  // IMPORTANTE: Sempre usar dados filtrados quando há filtro (API é fallback)
+  // Dados filtrados locais são mais confiáveis que a API
+  const shouldUseFiltered = hasAnyFilter;
+  
+  // Priorizar: Dados Filtrados Locais (quando há filtro) > API > Dados Originais
+  const kpis = shouldUseFiltered
+    ? filteredSalesData.kpis
+    : (apiData.kpis && hasAnyFilter ? {
+        faturamentoTotal: apiData.kpis.faturamento_total || 0,
+        lucroTotal: apiData.kpis.lucro_total || 0,
+        quantidadeVendas: apiData.kpis.total_vendas || 0,
+        clientesUnicos: apiData.kpis.clientes_unicos || 0,
+        ticketMedio: apiData.kpis.ticket_medio || 0,
+        avaliacaoMedia: apiData.kpis.avaliacao_media || 0,
+      } : salesData.kpis);
 
-  const vendasPorMes = apiData.monthlySales.length > 0 
-    ? apiData.monthlySales.map(m => ({
-        name: m.mes,
-        faturamento: m.faturamento || 0,
-        lucro: m.lucro || 0,
-        vendas: m.vendas || 0
-      }))
-    : (hasDateFilter ? [] : salesData.vendasPorMes);
+  const vendasPorMes = shouldUseFiltered
+    ? filteredSalesData.vendasPorMes
+    : (apiData.monthlySales.length > 0 && hasAnyFilter
+      ? apiData.monthlySales.map(m => ({
+          name: m.mes,
+          faturamento: m.faturamento || 0,
+          lucro: m.lucro || 0,
+          vendas: m.vendas || 0
+        }))
+      : salesData.vendasPorMes);
 
-  const vendasPorCategoria = apiData.salesByCategory.length > 0
-    ? apiData.salesByCategory
-    : (hasDateFilter ? [] : salesData.vendasPorCategoria);
+  const vendasPorCategoria = shouldUseFiltered
+    ? filteredSalesData.vendasPorCategoria
+    : (apiData.salesByCategory.length > 0 && hasAnyFilter
+      ? apiData.salesByCategory
+      : salesData.vendasPorCategoria);
 
-  const produtosMaisVendidos = apiData.topProducts.length > 0
-    ? apiData.topProducts
-    : (hasDateFilter ? [] : salesData.produtosMaisVendidos);
+  const produtosMaisVendidos = shouldUseFiltered
+    ? filteredSalesData.produtosMaisVendidos
+    : (apiData.topProducts.length > 0 && hasAnyFilter
+      ? apiData.topProducts
+      : salesData.produtosMaisVendidos);
 
-  const clientesPorGenero = apiData.customersByGender.length > 0
-    ? apiData.customersByGender
-    : (hasDateFilter ? [] : salesData.clientesPorGenero);
+  const clientesPorGenero = shouldUseFiltered
+    ? filteredSalesData.clientesPorGenero
+    : (apiData.customersByGender.length > 0 && hasAnyFilter
+      ? apiData.customersByGender
+      : salesData.clientesPorGenero);
 
-  const vendasPorEstado = apiData.salesByState.length > 0
-    ? apiData.salesByState
-    : (hasDateFilter ? [] : salesData.vendasPorEstado);
+  const vendasPorEstado = shouldUseFiltered
+    ? filteredSalesData.vendasPorEstado
+    : (apiData.salesByState.length > 0 && hasAnyFilter
+      ? apiData.salesByState
+      : salesData.vendasPorEstado);
 
-  const formaPagamento = apiData.paymentMethods.length > 0
-    ? apiData.paymentMethods
-    : (hasDateFilter ? [] : salesData.formaPagamento);
+  const formaPagamento = shouldUseFiltered
+    ? filteredSalesData.formaPagamento
+    : (apiData.paymentMethods.length > 0 && hasAnyFilter
+      ? apiData.paymentMethods
+      : salesData.formaPagamento);
 
-  const clientesPorIdade = apiData.customersByAge.length > 0
-    ? apiData.customersByAge
-    : (hasDateFilter ? [] : salesData.clientesPorIdade);
+  const clientesPorIdade = shouldUseFiltered
+    ? filteredSalesData.clientesPorIdade
+    : (apiData.customersByAge.length > 0 && hasAnyFilter
+      ? apiData.customersByAge
+      : salesData.clientesPorIdade);
 
-  const parcelamentoMedio = apiData.installments.length > 0
-    ? apiData.installments
-    : (hasDateFilter ? [] : salesData.parcelamentoMedio);
+  const parcelamentoMedio = shouldUseFiltered
+    ? filteredSalesData.parcelamentoMedio
+    : (apiData.installments.length > 0 && hasAnyFilter
+      ? apiData.installments
+      : salesData.parcelamentoMedio);
 
-  const statusEntrega = apiData.deliveryStatus.length > 0
-    ? apiData.deliveryStatus
-    : (hasDateFilter ? [] : salesData.statusEntrega);
+  const statusEntrega = shouldUseFiltered
+    ? filteredSalesData.statusEntrega
+    : (apiData.deliveryStatus.length > 0 && hasAnyFilter
+      ? apiData.deliveryStatus
+      : salesData.statusEntrega);
 
-  const avaliacaoPorProduto = apiData.productRatings.length > 0
-    ? apiData.productRatings
-    : (hasDateFilter ? [] : salesData.avaliacaoPorProduto);
+  const avaliacaoPorProduto = shouldUseFiltered
+    ? filteredSalesData.avaliacaoPorProduto
+    : (apiData.productRatings.length > 0 && hasAnyFilter
+      ? apiData.productRatings
+      : salesData.avaliacaoPorProduto);
 
   const tempoEntregaMedia = apiData.averageDeliveryTime?.tempo_medio || 0;
+
+  // Log de rastreamento detalhado
+  useEffect(() => {
+    console.log('📊 DASHBOARD - RASTREAMENTO COMPLETO:', {
+      filtrosAplicados: {
+        startDate: startDate || 'Nenhuma',
+        endDate: endDate || 'Nenhuma',
+        region: selectedRegion || 'Todas as Regiões',
+        hasAnyFilter,
+      },
+      dataSourceAtual: shouldUseFiltered ? '✅ Dados Filtrados Locais' : (apiData.loading ? '⏳ Carregando API' : '📄 Dados Originais'),
+      estatisticas: {
+        registrosFiltrados: filteredSalesData.kpis.quantidadeVendas,
+        registrosOriginais: salesData.kpis.quantidadeVendas,
+        registrosAPI: apiData.kpis?.total_vendas || 0,
+      },
+      graficos: {
+        vendasPorMes: filteredSalesData.vendasPorMes.length,
+        vendasPorCategoria: filteredSalesData.vendasPorCategoria.length,
+        produtosMaisVendidos: filteredSalesData.produtosMaisVendidos.length,
+        clientesPorGenero: filteredSalesData.clientesPorGenero.length,
+        vendasPorEstado: filteredSalesData.vendasPorEstado.length,
+        formaPagamento: filteredSalesData.formaPagamento.length,
+        clientesPorIdade: filteredSalesData.clientesPorIdade.length,
+        parcelamentoMedio: filteredSalesData.parcelamentoMedio.length,
+        statusEntrega: filteredSalesData.statusEntrega.length,
+        avaliacaoPorProduto: filteredSalesData.avaliacaoPorProduto.length,
+      },
+      kpis: {
+        faturamentoTotal: kpis.faturamentoTotal,
+        lucroTotal: kpis.lucroTotal,
+        quantidadeVendas: kpis.quantidadeVendas,
+        clientesUnicos: kpis.clientesUnicos,
+        ticketMedio: kpis.ticketMedio,
+        avaliacaoMedia: kpis.avaliacaoMedia,
+      },
+    });
+  }, [startDate, endDate, selectedRegion, shouldUseFiltered, apiData.loading]);
 
   const handlePrint = () => {
     // Usar o print nativo do navegador que respeita CSS de impressão
@@ -120,9 +195,25 @@ export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) =
           <h1 className="text-3xl font-bold mb-2">
             <span className="text-gradient">Hanami Analytics</span>
           </h1>
-          <p className="text-muted-foreground">
-            {formatNumber(data.length)} registros carregados
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="text-muted-foreground">
+              {formatNumber(data.length)} registros carregados
+            </p>
+            {hasAnyFilter && (
+              <div className="flex gap-2">
+                {startDate && endDate && (
+                  <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-semibold">
+                    📅 {format(parse(startDate, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy', { locale: ptBR })} → {format(parse(endDate, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy', { locale: ptBR })}
+                  </span>
+                )}
+                {selectedRegion && (
+                  <span className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-xs font-semibold">
+                    🗺️ {selectedRegion}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
           {apiData.loading && <p className="text-sm text-blue-600 mt-1">📡 Carregando dados do servidor...</p>}
         </div>
         <div className="flex items-center gap-3 no-print">
@@ -169,8 +260,12 @@ export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) =
               setStartDate(start);
               setEndDate(end);
             }}
+            onRegionChange={(region) => {
+              setSelectedRegion(region);
+            }}
             initialStartDate={startDate}
             initialEndDate={endDate}
+            initialRegion={selectedRegion}
           />
         </div>
 
