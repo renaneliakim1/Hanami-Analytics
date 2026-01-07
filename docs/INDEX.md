@@ -1,13 +1,13 @@
-# 📑 Índice de Documentação
+# 📑 Índice de Documentação - Hanami Analytics
 
 ## 🎯 Comece Aqui
 
-Bem-vindo ao **Hanami Analytics**! Escolha seu ponto de partida:
+Bem-vindo ao **Hanami Analytics**! Este índice organiza toda a documentação do projeto. Escolha seu ponto de partida:
 
-### **🚀 Primeira Vez?**
-1. Leia [README.md](./README.md) - Visão geral completa
-2. Siga [INSTALLATION.md](./INSTALLATION.md) - Instalação passo a passo
-3. Acesse Swagger em `http://localhost:8000/docs` - Teste interativo
+### **🚀 Primeira Vez?** (5 min)
+1. [QUICK_START.md](./QUICK_START.md) - Começar em 5 minutos ⚡
+2. [INSTALLATION.md](./INSTALLATION.md) - Instalação completa
+3. [README.md](../README.md) - Visão geral do projeto
 
 ### **📊 Quer Usar a API?**
 1. [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) - Referência de endpoints
@@ -15,12 +15,16 @@ Bem-vindo ao **Hanami Analytics**! Escolha seu ponto de partida:
 3. [DATA_VALIDATION.md](./DATA_VALIDATION.md) - Entender validação
 
 ### **🎨 Desenvolvendo o Frontend?**
-1. [FRONTEND_DOCUMENTATION.md](./FRONTEND_DOCUMENTATION.md) - Componentes
-2. [ARCHITECTURE.md](./ARCHITECTURE.md) - Estrutura técnica
+1. [FRONTEND_DOCUMENTATION.md](./FRONTEND_DOCUMENTATION.md) - Componentes React
+2. [ARCHITECTURE.md](./ARCHITECTURE.md) - Estrutura técnica do projeto
 
-### **🔧 Encontrou um Problema?**
-1. [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) - Soluções rápidas
-2. [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) - Verificar endpoint
+### **🚀 Pronto para Deploy?**
+1. [DEPLOYMENT.md](./DEPLOYMENT.md) - Deploy em produção
+2. Opções: Vercel, Railway, seu servidor
+
+### **🤝 Quer Contribuir?**
+1. [CONTRIBUTING.md](./CONTRIBUTING.md) - Como contribuir
+2. [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) - Soluções rápidas
 
 ---
 
