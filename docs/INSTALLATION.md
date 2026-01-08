@@ -232,7 +232,6 @@ Dados carregam automaticamente ao iniciar a API.
 - [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) - Endpoints
 - [FRONTEND_DOCUMENTATION.md](./FRONTEND_DOCUMENTATION.md) - Frontend
 - [DATA_VALIDATION.md](./DATA_VALIDATION.md) - Validação
-- [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) - Problemas
 
 ---
 

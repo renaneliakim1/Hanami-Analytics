@@ -137,11 +137,6 @@ INSTALLATION.md → DEPLOYMENT.md → TROUBLESHOOTING.md → Monitorar
 API_DOCUMENTATION.md → SWAGGER_GUIDE.md → DATA_VALIDATION.md → Integrar
 ```
 
-### **Pessoa com Problema**
-```
-TROUBLESHOOTING.md → Busca erro → Solução → Se não achar → CONTRIBUTING.md (reportar)
-```
-
 ---
 
 ## 📊 Análise de Cobertura

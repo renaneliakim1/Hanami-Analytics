@@ -140,17 +140,6 @@ id_transacao,cliente_id,data_venda,nome_produto,quantidade,valor_unitario,valor_
 
 ---
 
-## ✅ Checklist Rápido
-
-- [ ] Backend rodando (http://localhost:8000)
-- [ ] Frontend rodando (http://localhost:5173)
-- [ ] Arquivo uploadado com sucesso
-- [ ] Dashboards mostrando dados
-- [ ] Filtro por data funcionando
-- [ ] Filtro por região funcionando
-- [ ] Swagger UI acessível (http://localhost:8000/docs)
-
----
 
 ## 🎓 Próximos Passos
 
@@ -163,11 +152,6 @@ id_transacao,cliente_id,data_venda,nome_produto,quantidade,valor_unitario,valor_
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - Como contribuir
 - [FRONTEND_DOCUMENTATION.md](./FRONTEND_DOCUMENTATION.md) - Componentes
 
-### **Encontrou Problema?**
-- [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) - Soluções
-- Check logs: `api/logs/app.log`
-
----
 
 ## 🆘 Problemas Rápidos
 
@@ -194,26 +178,7 @@ lsof -i :8000
 kill -9 <PID>
 ```
 
-### **❌ "Score < 50%"**
-Seu arquivo tem dados ruins. Verifique:
-- Colunas necessárias presentes?
-- Datas em formato correto?
-- Valores numéricos válidos?
 
----
-
-## 🚀 Você Está Pronto!
-
-Você agora tem:
-
-✅ Dashboard completo  
-✅ 15+ gráficos interativos  
-✅ Filtros por data e região  
-✅ Tema claro/escuro  
-✅ API REST funcional  
-✅ Documentação Swagger  
-
-**Explore, teste, aproveite! 🎉**
 
 Para mais detalhes, consulte [INDEX.md](./INDEX.md)
 
