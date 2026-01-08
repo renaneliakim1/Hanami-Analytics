@@ -39,7 +39,7 @@ export const AreaChartComponent = ({ data, title, dataKey, color = "hsl(199, 89%
     <div className="chart-container h-[400px]">
       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">{title}</h3>
       <ResponsiveContainer width="100%" height="85%">
-        <AreaChart data={data}>
+        <AreaChart data={data} margin={{ left: 20, right: 20, top: 10, bottom: 10 }}>
           <defs>
             <linearGradient id={`gradient-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={color} stopOpacity={0.3} />
@@ -57,6 +57,7 @@ export const AreaChartComponent = ({ data, title, dataKey, color = "hsl(199, 89%
             className="text-muted-foreground"
             fontSize={12}
             tickLine={false}
+            width={100}
             tickFormatter={(value) => formatValue(value)}
           />
           <Tooltip 

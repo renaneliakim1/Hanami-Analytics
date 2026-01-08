@@ -39,6 +39,21 @@ export const useSalesData = (data: SalesRecord[]) => {
     
     const grouped: Record<string, { faturamento: number; lucro: number; vendas: number }> = {};
     
+    // Debug: verificar primeiro registro
+    if (data.length > 0) {
+      const sample = data[0];
+      console.log('Sample record:', {
+        valor_final: sample.valor_final,
+        valor_total: sample.valor_total,
+        margem_lucro: sample.margem_lucro,
+        lucro: sample.lucro,
+        tipos: {
+          valor_final: typeof sample.valor_final,
+          margem_lucro: typeof sample.margem_lucro
+        }
+      });
+    }
+    
     data.forEach(r => {
       if (!r.data_venda) return;
       
@@ -66,8 +81,12 @@ export const useSalesData = (data: SalesRecord[]) => {
       if (!grouped[key]) {
         grouped[key] = { faturamento: 0, lucro: 0, vendas: 0 };
       }
-      grouped[key].faturamento += r.valor_final || r.valor_total || 0;
-      grouped[key].lucro += r.margem_lucro || r.lucro || 0;
+      const valorVenda = Number(r.valor_final) || Number(r.valor_total) || 0;
+      // Se tiver campo 'lucro' em reais, usa direto. Senão, calcula: valor_final * margem_lucro
+      const valorLucro = Number(r.lucro) || (valorVenda * Number(r.margem_lucro)) || 0;
+      
+      grouped[key].faturamento += valorVenda;
+      grouped[key].lucro += valorLucro;
       grouped[key].vendas += 1;
     });
 
@@ -79,13 +98,12 @@ export const useSalesData = (data: SalesRecord[]) => {
         const monthName = monthNames[parseInt(monthNum) - 1];
         return {
           name: `${monthName}/${year}`,
-          faturamento: values.faturamento,
-          lucro: values.lucro,
+          faturamento: Math.round(values.faturamento * 100) / 100,
+          lucro: Math.round(values.lucro * 100) / 100,
           vendas: values.vendas,
         };
       });
 
-    console.log('Vendas por mês:', result);
     return result;
   }, [data]);
 

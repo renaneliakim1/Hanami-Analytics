@@ -71,7 +71,7 @@ export const BarChartComponent = ({
         <BarChart 
           data={data} 
           layout={horizontal ? "vertical" : "horizontal"}
-          margin={horizontal ? { top: 5, right: 30, left: leftMargin, bottom: 5 } : { top: 5, right: 30, left: 0, bottom: 80 }}
+          margin={horizontal ? { top: 5, right: 30, left: leftMargin, bottom: 5 } : { top: 5, right: 30, left: 20, bottom: 80 }}
           barCategoryGap={horizontal ? "20%" : "5%"}
         >
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={!horizontal} />
@@ -82,6 +82,7 @@ export const BarChartComponent = ({
                 className="text-muted-foreground"
                 fontSize={10}
                 tickLine={false}
+                width={100}
                 tickFormatter={formatValue}
               />
               <YAxis 
@@ -110,6 +111,7 @@ export const BarChartComponent = ({
                 className="text-muted-foreground"
                 fontSize={11}
                 tickLine={false}
+                width={100}
                 tickFormatter={formatValue}
               />
             </>

@@ -100,8 +100,10 @@ export const useFilteredSalesData = (data: SalesRecord[], region?: string, start
       if (!grouped[key]) {
         grouped[key] = { faturamento: 0, lucro: 0, vendas: 0 };
       }
-      grouped[key].faturamento += r.valor_final || 0;
-      grouped[key].lucro += r.margem_lucro || 0;
+      const valorVenda = Number(r.valor_final) || 0;
+      const valorLucro = Number(r.margem_lucro) || 0;
+      grouped[key].faturamento += valorVenda;
+      grouped[key].lucro += valorLucro;
       grouped[key].vendas += 1;
     });
 
@@ -113,8 +115,8 @@ export const useFilteredSalesData = (data: SalesRecord[], region?: string, start
         const monthName = monthNames[parseInt(monthNum) - 1];
         return {
           name: `${monthName}/${year}`,
-          faturamento: values.faturamento,
-          lucro: values.lucro,
+          faturamento: Math.round(values.faturamento * 100) / 100,
+          lucro: Math.round(values.lucro * 100) / 100,
           vendas: values.vendas,
         };
       });
