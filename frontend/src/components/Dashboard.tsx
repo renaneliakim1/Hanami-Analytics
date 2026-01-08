@@ -13,6 +13,7 @@ import { PaymentsTab } from "./dashboard/PaymentsTab";
 import { LogisticsTab } from "./dashboard/LogisticsTab";
 import { DateRangePicker } from "./DateRangePicker";
 import { ThemeToggle } from "./ThemeToggle";
+import { ActionMenu } from "./ActionMenu";
 import { formatNumber, formatCurrency } from "@/utils/csvParser";
 import { useState, useEffect } from "react";
 import { format, parse } from "date-fns";
@@ -209,6 +210,17 @@ export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) =
 
   return (
     <div className="min-h-screen p-6 lg:p-8">
+      {/* Mobile Menu - Fixed in top right corner (< 670px) */}
+      <div className="fixed top-4 right-4 z-50 min-[670px]:hidden no-print">
+        <ActionMenu
+          onExportCSV={handleExportCSV}
+          onExportExcel={handleExportExcel}
+          onPrint={handlePrint}
+          onNewUpload={onReset}
+          isExporting={isExporting}
+        />
+      </div>
+
       {/* Print Header - Only shows when printing */}
       <div className="hidden print:block mb-8">
         <h1 className="text-4xl font-bold mb-2">Hanami Analytics</h1>
@@ -218,7 +230,7 @@ export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) =
       </div>
 
       {/* Header */}
-      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8 max-[670px]:pr-16">
         <div>
           <h1 className="text-3xl font-bold mb-2">
             <span className="text-gradient">Hanami Analytics</span>
@@ -244,7 +256,9 @@ export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) =
           </div>
           {apiData.loading && <p className="text-sm text-blue-600 mt-1">📡 Carregando dados do servidor...</p>}
         </div>
-        <div className="flex items-center gap-3 no-print">
+        
+        {/* Desktop Actions - Hidden on mobile (< 670px) */}
+        <div className="hidden min-[670px]:flex items-center gap-3 no-print">
           <button
             onClick={handleExportCSV}
             disabled={isExporting}

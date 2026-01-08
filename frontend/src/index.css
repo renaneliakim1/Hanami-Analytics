@@ -120,6 +120,11 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+
+  html {
+    overflow-x: hidden;
   }
 
   .font-mono {
@@ -338,5 +343,30 @@
   .backdrop-blur-sm,
   .backdrop-blur {
     backdrop-filter: none !important;
+  }
+}
+
+/* Responsiveness - Prevent horizontal scroll */
+@media (max-width: 670px) {
+  .min-h-screen {
+    overflow-x: hidden;
+  }
+  
+  /* Ensure header content wraps properly */
+  header {
+    flex-wrap: wrap;
+  }
+  
+  /* Responsive buttons and cards */
+  .flex.items-center.gap-3 {
+    flex-wrap: wrap;
+  }
+}
+
+/* Prevent unnecessary scrollbars on larger screens */
+@media (min-width: 671px) {
+  body, html {
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 }
