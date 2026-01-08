@@ -5,15 +5,17 @@
 ```
 frontend/src/
 ├── components/
-│   ├── Dashboard.tsx              # Container principal
+│   ├── Dashboard.tsx              # Container principal com responsividade mobile
 │   ├── FileUpload.tsx             # Upload com detecção de datas
+│   ├── DateRangePicker.tsx        # Filtros responsivos (data/região)
+│   ├── ActionMenu.tsx             # Menu hamburger para mobile
 │   ├── KPICard.tsx                # Card com métrica
 │   ├── NavLink.tsx                # Link de navegação
 │   ├── ThemeToggle.tsx            # Dark mode toggle
 │   │
 │   ├── charts/
-│   │   ├── AreaChartComponent.tsx # Gráfico de área
-│   │   ├── BarChartComponent.tsx  # Barras (horizontal/vertical)
+│   │   ├── AreaChartComponent.tsx # Gráfico de área (responsivo)
+│   │   ├── BarChartComponent.tsx  # Barras (horizontal/vertical, responsivo)
 │   │   └── PieChartComponent.tsx  # Pizza
 │   │
 │   ├── dashboard/
@@ -29,11 +31,17 @@ frontend/src/
 │       ├── card.tsx
 │       ├── tabs.tsx
 │       ├── select.tsx
-│       ├── date-picker.tsx
+│       ├── calendar.tsx           # Calendário responsivo
+│       ├── popover.tsx            # Popover com ajuste mobile
+│       ├── sheet.tsx              # Sheet para menu mobile
+│       ├── dropdown-menu.tsx      # Menu dropdown
 │       └── ... (shadcn/ui components)
 │
 ├── hooks/
-│   ├── useSalesData.ts            # Gerencia dados e API
+│   ├── useSalesData.ts            # Gerencia dados locais
+│   ├── useFilteredSalesData.ts    # Dados filtrados por data/região
+│   ├── useApiReport.ts            # Dados da API
+│   ├── useExportReport.ts         # Exportação CSV/Excel
 │   ├── use-toast.ts               # Notificações
 │   └── use-mobile.tsx             # Detecção de mobile
 │

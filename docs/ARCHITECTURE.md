@@ -5,9 +5,11 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      CLIENTE (Browser)                      │
-│                   React 18 + TypeScript                     │
+│             React 18 + TypeScript + Vite                    │
+│     Desktop (≥670px) | Mobile (<670px) Responsive          │
 └────────────┬────────────────────────────────────────────────┘
              │ HTTP/REST + CORS
+             │ Filtros: data range + região
              ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                   FastAPI (uvicorn)                         │
@@ -16,7 +18,8 @@
 │  • Parser CSV/XLSX                                          │
 │  • Validação de Dados                                       │
 │  • 14 Endpoints de Análise                                  │
-│  • Filtro por Data                                          │
+│  • Filtros: Data Range + Região                            │
+│  • Exportação: CSV/Excel com filtros                       │
 │  • Logging Estruturado                                      │
 └────────┬────────────────────────────────────┬───────────────┘
          │                                    │
@@ -66,7 +69,7 @@ Senão:
 ### **2. Requisição de Análise**
 
 ```
-User solicita KPI (ex: /kpis?start_date=2025-12-05&end_date=2026-01-05)
+User solicita KPI com filtros (ex: /kpis?start_date=2024-01-01&end_date=2024-12-31&region=Sudeste)
     ↓
 Backend recebe requisição
     ↓
@@ -74,15 +77,26 @@ Log: INFO "📊 Solicitação de KPIs"
     ↓
 Buscar dados (uploaded ou default)
     ↓
-Filtrar por date range
+Aplicar filtros:
+    ├─ Filtro de data: df[(df['data_venda'] >= start) & (df['data_venda'] <= end)]
+    └─ Filtro de região: df[df['estado_cliente'].map(estado_to_regiao) == region]
     ↓
 Calcular KPIs (pandas operations)
+    ├─ faturamento_total = df['valor_final'].sum()
+    ├─ lucro_total = df['lucro'].sum() ou df['valor_final'] * df['margem_lucro']
+    ├─ total_vendas = len(df)
+    ├─ clientes_unicos = df['cliente_id'].nunique()
+    ├─ ticket_medio = faturamento_total / total_vendas
+    └─ avaliacao_media = df['avaliacao_produto'].mean()
     ↓
-Log: INFO "✅ KPIs calculados: 300 registros"
+Log: INFO "✅ KPIs calculados: 300 registros filtrados"
     ↓
 Retornar JSON com resultados
     ↓
 Frontend renderiza gráficos (Recharts)
+    ├─ AreaChart com formatação pt-BR
+    ├─ BarChart com width otimizado (mobile/desktop)
+    └─ PieChart com tooltips localizados
 ```
 
 ---

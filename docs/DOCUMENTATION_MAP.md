@@ -2,7 +2,7 @@
 
 ## 📊 Visão Geral Consolidada
 
-Documentação do Hanami Analytics está **100% completa** com 12 arquivos principais.
+Documentação do Hanami Analytics está **100% completa** com 15 arquivos principais, incluindo guias de responsividade mobile e correções de bugs.
 
 ---
 
@@ -19,11 +19,12 @@ Documentação do Hanami Analytics está **100% completa** com 12 arquivos princ
 | Testar com Swagger | [SWAGGER_GUIDE.md](./SWAGGER_GUIDE.md) | 10 min |
 | Entender arquitetura | [ARCHITECTURE.md](./ARCHITECTURE.md) | 30 min |
 | Desenvolver frontend | [FRONTEND_DOCUMENTATION.md](./FRONTEND_DOCUMENTATION.md) | 45 min |
+| Design responsivo | [RESPONSIVE_DESIGN.md](./RESPONSIVE_DESIGN.md) | 25 min |
+| Correções de bugs | [BUG_FIXES.md](./BUG_FIXES.md) | 20 min |
 | Validar dados | [DATA_VALIDATION.md](./DATA_VALIDATION.md) | 20 min |
-| Fazer deploy | [DEPLOYMENT.md](./DEPLOYMENT.md) | 45 min |
+| Filtros avançados | [ARQUITETURA_FILTROS.md](./ARQUITETURA_FILTROS.md) | 15 min |
 | Resolver problema | [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) | 5-30 min |
-| Contribuir | [CONTRIBUTING.md](./CONTRIBUTING.md) | 15 min |
-| Índice/Visão geral | [INDEX.md](./INDEX.md) | 5 min |
+| Índice/Visão geral | Este arquivo | 5 min |
 
 ---
 
@@ -33,14 +34,17 @@ Documentação do Hanami Analytics está **100% completa** com 12 arquivos princ
 
 #### Frontend
 - ✅ 6 Dashboards (Visão Geral, Vendas, Produtos, Clientes, Pagamentos, Logística)
-- ✅ 15+ Gráficos (Área, Barras, Pizza)
-- ✅ Sistema de Filtros (Data, Região, Atalhos)
-- ✅ Exportação CSV/Excel com filtros
-- ✅ Tema Escuro/Claro
-- ✅ Impressão em PDF
-- ✅ Upload de CSV/XLSX
-- ✅ Validação em Frontend
-- ✅ Responsividade (Ultrawide otimizado)
+- ✅ 15+ Gráficos (Área, Barras, Pizza) com valores corrigidos
+- ✅ Sistema de Filtros (Data, Região, Atalhos) responsivo
+- ✅ Exportação CSV/Excel com filtros aplicados
+- ✅ Tema Escuro/Claro com persistência
+- ✅ Impressão em PDF (modo paisagem, tema claro)
+- ✅ Upload de CSV/XLSX com validação
+- ✅ Menu Hamburger para mobile (< 670px)
+- ✅ Tabs fixas no rodapé (mobile)
+- ✅ Calendários responsivos (empilhados em mobile)
+- ✅ Totalmente responsivo (mobile/tablet/desktop/ultrawide)
+- ✅ Gráficos com eixos otimizados (width=100px)
 
 #### Backend
 - ✅ 15+ Endpoints REST
@@ -94,10 +98,22 @@ Documentação do Hanami Analytics está **100% completa** com 12 arquivos princ
 ```
 docs/
 ├── README.md                          ← Índice da pasta docs
-├── INDEX.md                           ← Índice principal ⭐
+├── DOCUMENTATION_MAP.md               ← Este arquivo (mapa completo) ⭐
 ├── QUICK_START.md                     ← 5 minutos ⚡
 ├── INSTALLATION.md                    ← Setup completo
-├── ARCHITECTURE.md                    ← Design técnico
+├── ARCHITECTURE.md                    ← Design técnico (atualizado com filtros)
+├── FRONTEND_DOCUMENTATION.md          ← Componentes React (atualizado)
+├── RESPONSIVE_DESIGN.md               ← Design mobile/desktop 📱 NOVO
+├── BUG_FIXES.md                       ← Correções implementadas 🐛 NOVO
+├── ARQUITETURA_FILTROS.md             ← Sistema de filtros detalhado
+├── API_DOCUMENTATION.md               ← Endpoints e schemas
+├── DATA_VALIDATION.md                 ← Validação de dados
+├── EXPORT_GUIDE.md                    ← Guia de exportação
+├── EXPORT_MODULE_SUMMARY.md           ← Resumo módulo de exportação
+├── EXPORT_QUICK_START.md              ← Início rápido exportação
+├── SWAGGER.md                         ← Documentação OpenAPI
+└── SWAGGER_GUIDE.md                   ← Tutorial Swagger UI
+```
 ├── FRONTEND_DOCUMENTATION.md          ← Componentes React
 ├── API_DOCUMENTATION.md               ← Endpoints REST
 ├── SWAGGER_GUIDE.md                   ← Teste interativo

@@ -8,12 +8,16 @@ Dashboard inteligente para análise e visualização de dados de vendas com back
 
 - **6 Dashboards Completos**: Visão Geral, Vendas, Produtos, Clientes, Pagamentos, Logística
 - **15+ Gráficos Interativos**: Área, Barras, Pizza, com tooltips e responsivos
-- **Filtros Avançados**: Data (com calendários), Região (6 opções), Atalhos rápidos
+- **Filtros Avançados**: Data (com calendários responsivos), Região (6 opções), Atalhos rápidos
 - **Tema Escuro/Claro**: Alternância automática com persistência
-- **Impressão em PDF**: Geração de relatórios formatados
-- **API REST**: Endpoints para integração externa
-- **Otimizado para Ultrawide**: Suporte completo para monitores 29" e maiores
+- **Impressão em PDF**: Geração de relatórios formatados em modo paisagem
+- **API REST**: Endpoints para integração externa com suporte a filtros
+- **Totalmente Responsivo**: 
+  - 📱 **Mobile First**: Menu hamburger, tabs fixas no rodapé, calendários empilhados
+  - 🖥️ **Desktop**: Tabs no topo, menu inline, calendários lado a lado
+  - 📺 **Ultrawide**: Suporte completo para monitores 29" e maiores
 - **Dados em Português**: Formatação de moeda (R$), datas (dd/MM/yyyy) e localização pt-BR
+- **Exportação Inteligente**: CSV e Excel com filtros aplicados e múltiplas abas
 
 ## 🛠️ Stack Tecnológico
 
@@ -67,7 +71,7 @@ npm run dev
 ## 📂 Estrutura do Projeto
 
 ```
-analyze-joy-hub/
+Hanami-Analytics/
 ├── api/                          # Backend FastAPI
 │   ├── main.py                  # Endpoints da API
 │   ├── data_validator.py        # Validação de dados
@@ -77,8 +81,10 @@ analyze-joy-hub/
 ├── frontend/                     # Frontend React
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Dashboard.tsx            # Componente principal
-│   │   │   ├── DateRangePicker.tsx      # Filtros (data/região)
+│   │   │   ├── Dashboard.tsx            # Componente principal com responsividade
+│   │   │   ├── DateRangePicker.tsx      # Filtros responsivos (data/região)
+│   │   │   ├── ActionMenu.tsx           # Menu hamburger para mobile
+│   │   │   ├── ThemeToggle.tsx          # Alternador de tema
 │   │   │   ├── dashboard/
 │   │   │   │   ├── OverviewTab.tsx      # Visão Geral
 │   │   │   │   ├── SalesTab.tsx         # Vendas
@@ -157,25 +163,35 @@ analyze-joy-hub/
 ### Filtros Disponíveis
 
 1. **Data Range** 📅
-   - Calendários interativos (data inicial e final)
+   - Calendários interativos responsivos (data inicial e final)
    - Seletores de mês/ano para navegação rápida
-   - Atalhos: "Últimos 7 dias", "Últimos 30 dias", etc
+   - Atalhos: "Últimos 7 dias", "Últimos 30 dias", "Últimos 90 dias", "Este mês", "Este ano"
    - Formatação em padrão brasileiro (dd/MM/yyyy)
+   - **Mobile**: Calendários empilhados verticalmente com escala otimizada
+   - **Desktop**: Calendários lado a lado para comparação rápida
 
 2. **Região** 🗺️
-   - Sudeste, Nordeste, Sul, Centro-Oeste, Norte
+   - Todas as Regiões, Sudeste, Nordeste, Sul, Centro-Oeste, Norte
    - Filtro combinável com data
-   - Atualização em tempo real de todos os gráficos
+   - Atualização em tempo real de todos os gráficos e KPIs
 
 ### Características Especiais
 
-- ✨ **Ultrawide Ready**: Otimizado para monitores 29" e maiores
-  - Layout responsivo com calendários lado a lado
-  - Scroll vertical para popover com conteúdo extenso
+- 📱 **Mobile Friendly**: 
+  - Popover com 95% da largura da tela
+  - Calendários empilhados verticalmente
+  - Presets em coluna única
+  - Escala reduzida para melhor visualização
+  - Touch-friendly com áreas de toque otimizadas
+  
+- 🖥️ **Desktop/Ultrawide**: 
+  - Calendários lado a lado
+  - Presets em grid 2 colunas
+  - Scroll vertical para conteúdo extenso
   - Botões "Aplicar" e "Resetar" sempre acessíveis
   
-- 🚀 **Performance**: Usememo para otimização de cálculos
-- 🎨 **Responsivo**: Adapta-se a qualquer tamanho de tela
+- 🚀 **Performance**: useMemo para otimização de cálculos
+- 🎨 **Totalmente Responsivo**: Breakpoint em 670px para mobile/desktop
 - 🌙 **Dark Mode**: Suporte completo com cores otimizadas
 
 ## 🔌 API REST
@@ -228,7 +244,42 @@ GET /export/excel?start_date=2024-01-01&end_date=2024-12-31&region=Sul
 
 Documentação completa em: http://localhost:8000/docs (Swagger UI)
 
-## 💡 Guia de Uso Rápido
+## � Responsividade Mobile
+
+O dashboard foi otimizado para dispositivos móveis com recursos específicos:
+
+### Layout Mobile (< 670px)
+
+- **Menu Hamburger**: Botões de ação (exportar, imprimir, tema, upload) acessíveis via menu superior direito
+- **Tabs no Rodapé**: Navegação fixa na parte inferior com ícones e labels
+- **Calendários Empilhados**: Seleção de datas com calendários verticais otimizados
+- **Gráficos Adaptáveis**: Eixos e labels ajustados automaticamente
+- **Impressão Otimizada**: Modo paisagem automático, tema claro forçado
+
+### Layout Desktop (≥ 670px)
+
+- **Tabs no Topo**: Navegação sticky no topo da página
+- **Botões Inline**: Ações visíveis diretamente na barra superior
+- **Calendários Lado a Lado**: Comparação rápida de datas inicial e final
+- **Gráficos Expandidos**: Aproveitamento total da largura disponível
+
+### Breakpoints Responsivos
+
+```css
+/* Mobile */
+max-width: 670px - Menu hamburger, tabs no rodapé
+
+/* Desktop */
+min-width: 670px - Tabs no topo, menu inline
+
+/* Tablet/Desktop */
+min-width: 640px (sm) - Ajustes de grid e espaçamento
+
+/* Desktop Large */
+min-width: 1024px (lg) - Grid de 2 colunas para gráficos
+```
+
+## �💡 Guia de Uso Rápido
 
 ### Primeiro Acesso
 
@@ -239,10 +290,17 @@ Documentação completa em: http://localhost:8000/docs (Swagger UI)
 
 ### Filtros
 
-- **Data**: Clique no calendário, selecione mês/ano ou use atalhos
-- **Região**: Escolha uma região ou deixe "Todas as regiões"
-- **Aplicar**: Confirma os filtros
-- **Resetar**: Remove todos os filtros
+- **Data**: Clique no calendário, selecione mês/ano ou use atalhos rápidos
+- **Região**: Escolha uma região específica ou deixe "Todas as regiões"
+- **Aplicar**: Confirma os filtros e atualiza todos os gráficos
+- **Resetar**: Remove todos os filtros (volta para últimos 30 dias)
+
+### Navegação Mobile
+
+- **Menu**: Toque no ícone ☰ no canto superior direito para acessar ações
+- **Tabs**: Use a barra fixa no rodapé para alternar entre dashboards
+- **Calendário**: Em mobile, os calendários são empilhados verticalmente para melhor usabilidade
+- **Gráficos**: Role verticalmente, os gráficos se ajustam automaticamente
 
 ### Exportação de Dados 📥
 
@@ -300,8 +358,8 @@ O backend FastAPI pode ser deployado em qualquer servidor Python.
 ### Usando IDE Local
 
 ```bash
-git clone https://github.com/renaneliakim1/analyze-joy-hub.git
-cd analyze-joy-hub
+git clone <URL_DO_SEU_REPOSITORIO>
+cd Hanami-Analytics
 cd frontend
 npm install
 npm run dev
@@ -342,6 +400,18 @@ src/components/
 - Reduza o período de datas (menos registros)
 - Feche outras abas do navegador
 - Verifique se há muitos gráficos abertos
+
+### Problemas em dispositivos móveis
+- **Calendário não aparece**: Aumente o zoom do navegador ou rotacione para paisagem
+- **Menu não abre**: Toque no ícone ☰ no canto superior direito
+- **Tabs não aparecem**: Role até o final da página, tabs ficam fixas no rodapé
+- **Gráficos cortados**: Role horizontalmente ou reduza o zoom
+- **Valores zerados nos gráficos**: Recarregue a página (F5) ou limpe o cache
+
+### Impressão de relatórios
+- **Modo paisagem automático**: Configurado para melhor visualização dos gráficos
+- **Tema claro forçado**: Economiza tinta e melhora legibilidade
+- **Elementos escondidos**: Menu e tabs não aparecem na impressão
 
 Para mais detalhes, consulte [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 
