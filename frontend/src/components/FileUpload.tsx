@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Database } from "lucide-react";
 import { SalesRecord } from "@/types/sales";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface FileUploadProps {
   onDataLoaded: (data: SalesRecord[], startDate?: string, endDate?: string) => void;
@@ -250,6 +251,11 @@ export const FileUpload = ({ onDataLoaded, onError }: FileUploadProps) => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-8">
+      {/* Theme Toggle - Fixed in top right corner */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
       <div className="w-full max-w-2xl animate-fade-in">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">

@@ -1,5 +1,11 @@
-import { BarChart3, TrendingUp, Package, Users, CreditCard, Truck, Upload, Printer, FileSpreadsheet, FileText } from "lucide-react";
+import { BarChart3, TrendingUp, Package, Users, CreditCard, Truck, Upload, Printer, FileSpreadsheet, FileText, Download, ChevronDown } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { SalesRecord } from "@/types/sales";
 import { useSalesData } from "@/hooks/useSalesData";
 import { useFilteredSalesData } from "@/hooks/useFilteredSalesData";
@@ -175,7 +181,9 @@ export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) =
     }, 200);
   };
 
-  const handleExportCSV = async () => {
+  const handleExportCSV = async (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     try {
       await exportCSV({
         startDate: startDate || undefined,
@@ -187,7 +195,9 @@ export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) =
     }
   };
 
-  const handleExportExcel = async () => {
+  const handleExportExcel = async (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     try {
       await exportExcel({
         startDate: startDate || undefined,
@@ -209,9 +219,9 @@ export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) =
   ];
 
   return (
-    <div className="min-h-screen p-6 lg:p-8">
-      {/* Mobile Menu - Fixed in top right corner (< 670px) */}
-      <div className="fixed top-4 right-4 z-50 min-[670px]:hidden no-print">
+    <div className="min-h-screen p-6 lg:p-8 relative">
+      {/* Mobile Menu - Top right corner (< 670px) */}
+      <div className="absolute top-4 right-4 z-50 min-[670px]:hidden no-print">
         <ActionMenu
           onExportCSV={handleExportCSV}
           onExportExcel={handleExportExcel}
@@ -230,7 +240,7 @@ export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) =
       </div>
 
       {/* Header */}
-      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8 max-[670px]:pr-16">
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold mb-2">
             <span className="text-gradient">Hanami Analytics</span>
@@ -259,24 +269,46 @@ export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) =
         
         {/* Desktop Actions - Hidden on mobile (< 670px) */}
         <div className="hidden min-[670px]:flex items-center gap-3 no-print">
-          <button
-            onClick={handleExportCSV}
-            disabled={isExporting}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 disabled:bg-gray-400 transition-colors text-sm font-medium text-white"
-            title="Exportar para CSV"
-          >
-            <FileText className="w-4 h-4" />
-            {isExporting ? "Exportando..." : "Exportar CSV"}
-          </button>
-          <button
-            onClick={handleExportExcel}
-            disabled={isExporting}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 transition-colors text-sm font-medium text-white"
-            title="Exportar para Excel"
-          >
-            <FileSpreadsheet className="w-4 h-4" />
-            {isExporting ? "Exportando..." : "Exportar Excel"}
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                disabled={isExporting}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 transition-colors text-sm font-medium text-white"
+                title="Exportar relatório"
+                type="button"
+              >
+                <Download className="w-4 h-4" />
+                {isExporting ? "Exportando..." : "Exportar"}
+                <ChevronDown className="w-4 h-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault();
+                  if (!isExporting) {
+                    handleExportCSV();
+                  }
+                }}
+                disabled={isExporting}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault();
+                  if (!isExporting) {
+                    handleExportExcel();
+                  }
+                }}
+                disabled={isExporting}
+              >
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Excel
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <button
             onClick={handlePrint}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent hover:bg-accent/80 transition-colors text-sm font-medium text-accent-foreground"

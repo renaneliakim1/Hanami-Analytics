@@ -14,8 +14,8 @@ export const useSalesData = (data: SalesRecord[]) => {
       };
     }
 
-    const faturamentoTotal = data.reduce((sum, r) => sum + (r.valor_total || 0), 0);
-    const lucroTotal = data.reduce((sum, r) => sum + (r.lucro || 0), 0);
+    const faturamentoTotal = data.reduce((sum, r) => sum + (r.valor_final || r.valor_total || 0), 0);
+    const lucroTotal = data.reduce((sum, r) => sum + (r.margem_lucro || r.lucro || 0), 0);
     const quantidadeVendas = data.length;
     const clientesUnicos = new Set(data.map(r => r.cliente_id).filter(Boolean)).size;
     const ticketMedio = quantidadeVendas > 0 ? faturamentoTotal / quantidadeVendas : 0;
@@ -66,8 +66,8 @@ export const useSalesData = (data: SalesRecord[]) => {
       if (!grouped[key]) {
         grouped[key] = { faturamento: 0, lucro: 0, vendas: 0 };
       }
-      grouped[key].faturamento += r.valor_total || 0;
-      grouped[key].lucro += r.lucro || 0;
+      grouped[key].faturamento += r.valor_final || r.valor_total || 0;
+      grouped[key].lucro += r.margem_lucro || r.lucro || 0;
       grouped[key].vendas += 1;
     });
 
@@ -100,13 +100,19 @@ export const useSalesData = (data: SalesRecord[]) => {
         grouped[key] = { quantidade: 0, lucro: 0, nome: r.nome_produto || key };
       }
       grouped[key].quantidade += r.quantidade || 1;
-      grouped[key].lucro += r.lucro || 0;
+      grouped[key].lucro += r.margem_lucro || r.lucro || 0;
     });
 
     return Object.values(grouped)
       .sort((a, b) => b.quantidade - a.quantidade)
       .slice(0, 10)
-      .map(p => ({ name: p.nome, quantidade: p.quantidade, lucro: p.lucro }));
+      .map(p => ({ 
+        name: p.nome, 
+        value: p.quantidade,
+        quantidade: p.quantidade, 
+        revenue: p.lucro,
+        lucro: p.lucro 
+      }));
   }, [data]);
 
   const vendasPorCategoria = useMemo(() => {
@@ -116,7 +122,7 @@ export const useSalesData = (data: SalesRecord[]) => {
     
     data.forEach(r => {
       const categoria = r.categoria_produto || 'Outros';
-      grouped[categoria] = (grouped[categoria] || 0) + (r.valor_total || 0);
+      grouped[categoria] = (grouped[categoria] || 0) + (r.valor_final || r.valor_total || 0);
     });
 
     const result = Object.entries(grouped)
@@ -174,7 +180,7 @@ export const useSalesData = (data: SalesRecord[]) => {
     
     data.forEach(r => {
       const estado = r.estado_cliente || 'Não informado';
-      grouped[estado] = (grouped[estado] || 0) + (r.valor_total || 0);
+      grouped[estado] = (grouped[estado] || 0) + (r.valor_final || r.valor_total || 0);
     });
 
     const result = Object.entries(grouped)
@@ -197,7 +203,7 @@ export const useSalesData = (data: SalesRecord[]) => {
         grouped[forma] = { count: 0, total: 0 };
       }
       grouped[forma].count++;
-      grouped[forma].total += r.valor_total || 0;
+      grouped[forma].total += r.valor_final || r.valor_total || 0;
     });
 
     const result = Object.entries(grouped)
