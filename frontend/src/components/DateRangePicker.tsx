@@ -162,7 +162,7 @@ export const DateRangePicker = ({ onDateChange, onRegionChange, initialStartDate
                 <ChevronRight className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-4 max-h-[90vh] overflow-y-auto" align="start">
+            <PopoverContent className="w-[95vw] sm:w-auto p-3 sm:p-4 max-h-[90vh] overflow-y-auto" align="start">
               <div className="space-y-3 min-w-max">
                 {/* Region Filter */}
                 <div>
@@ -183,7 +183,7 @@ export const DateRangePicker = ({ onDateChange, onRegionChange, initialStartDate
                 {/* Presets */}
                 <div>
                   <p className="text-xs font-semibold text-gray-900 dark:text-white mb-1">Atalhos:</p>
-                  <div className="grid grid-cols-2 gap-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
                     {presets.map((preset) => (
                       <Button
                         key={preset.label}
@@ -201,8 +201,8 @@ export const DateRangePicker = ({ onDateChange, onRegionChange, initialStartDate
                 <div className="border-t dark:border-gray-700 pt-3">
                   <p className="text-xs font-semibold text-gray-900 dark:text-white mb-2">Selecione manualmente:</p>
                   
-                  {/* Dois Blocos: Data Inicial e Data Final - lado a lado */}
-                  <div className="grid grid-cols-2 gap-2">
+                  {/* Dois Blocos: Data Inicial e Data Final - lado a lado em desktop, empilhados em mobile */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {/* Data Inicial */}
                     <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-2">
                       <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 block">Data Inicial</label>
@@ -263,7 +263,7 @@ export const DateRangePicker = ({ onDateChange, onRegionChange, initialStartDate
                         onMonthChange={setStartDate}
                         disabled={(date) => date > endDate || date > new Date()}
                         locale={ptBR}
-                        className="rounded border-gray-200 dark:border-gray-700 w-full text-xs [&_.react-datepicker__day]:text-xs"
+                        className="rounded border-gray-200 dark:border-gray-700 w-full text-[10px] sm:text-xs scale-90 sm:scale-100 origin-top"
                       />
                     </div>
 
@@ -327,7 +327,7 @@ export const DateRangePicker = ({ onDateChange, onRegionChange, initialStartDate
                         onMonthChange={setEndDate}
                         disabled={(date) => date < startDate || date > new Date()}
                         locale={ptBR}
-                        className="rounded border-gray-200 dark:border-gray-700 w-full text-xs [&_.react-datepicker__day]:text-xs"
+                        className="rounded border-gray-200 dark:border-gray-700 w-full text-[10px] sm:text-xs scale-90 sm:scale-100 origin-top"
                       />
                     </div>
                   </div>

@@ -337,8 +337,9 @@ export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) =
       )}
 
       {/* Tabs */}
-      <Tabs defaultValue="overview" className="space-y-6">
-        <div className="sticky top-0 z-40 flex justify-center py-4 bg-gradient-to-b from-background to-background/95 backdrop-blur-sm border-b">
+      <Tabs defaultValue="overview" className="space-y-6 max-[670px]:pb-24">
+        {/* Desktop: tabs no topo | Mobile: tabs no rodapé */}
+        <div className="hidden min-[670px]:flex sticky top-0 z-40 justify-center py-4 bg-gradient-to-b from-background to-background/95 backdrop-blur-sm border-b">
           <TabsList className="glass-card p-1 inline-flex">
             {tabs.map((tab) => (
             <TabsTrigger
@@ -348,6 +349,22 @@ export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) =
             >
               <tab.icon className="w-4 h-4" />
               <span className="hidden sm:inline">{tab.label}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        </div>
+        
+        {/* Tabs fixas no rodapé para mobile */}
+        <div className="max-[670px]:flex max-[670px]:fixed max-[670px]:bottom-0 max-[670px]:left-0 max-[670px]:right-0 max-[670px]:z-50 max-[670px]:justify-center max-[670px]:py-2 max-[670px]:bg-background max-[670px]:border-t max-[670px]:shadow-lg hidden">
+          <TabsList className="glass-card p-1 inline-flex overflow-x-auto max-w-full">
+            {tabs.map((tab) => (
+            <TabsTrigger
+              key={tab.id}
+              value={tab.id}
+              className="tab-modern flex flex-col items-center gap-1 data-[state=active]:bg-primary/10 rounded-lg min-w-[60px] text-xs"
+            >
+              <tab.icon className="w-5 h-5" />
+              <span className="text-[10px]">{tab.label}</span>
             </TabsTrigger>
           ))}
         </TabsList>
