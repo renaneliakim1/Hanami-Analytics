@@ -196,7 +196,35 @@ GET  /customer-by-age          # Por faixa etária
 GET  /delivery-status          # Status de entregas
 GET  /product-ratings          # Avaliações
 GET  /average-delivery-time    # Tempo médio entrega
+GET  /export/csv               # Exportar relatório em CSV
+GET  /export/excel             # Exportar relatório em Excel
 ```
+
+### Exportação de Relatórios 📊
+
+Os endpoints de exportação suportam filtros opcionais:
+
+**CSV Export:**
+```
+GET /export/csv?start_date=2024-01-01&end_date=2024-12-31&region=Sudeste
+```
+
+**Excel Export:**
+```
+GET /export/excel?start_date=2024-01-01&end_date=2024-12-31&region=Sul
+```
+
+**Parâmetros disponíveis:**
+- `start_date`: Data inicial (formato: YYYY-MM-DD)
+- `end_date`: Data final (formato: YYYY-MM-DD)
+- `region`: Região específica (Norte, Nordeste, Sul, Sudeste, Centro-Oeste)
+
+**Características:**
+- ✅ Filtros por período e região
+- ✅ Nome de arquivo com timestamp e filtros aplicados
+- ✅ Excel com múltiplas abas (Dados, Resumo, Informações)
+- ✅ CSV com encoding UTF-8
+- ✅ Download automático
 
 Documentação completa em: http://localhost:8000/docs (Swagger UI)
 
@@ -215,6 +243,27 @@ Documentação completa em: http://localhost:8000/docs (Swagger UI)
 - **Região**: Escolha uma região ou deixe "Todas as regiões"
 - **Aplicar**: Confirma os filtros
 - **Resetar**: Remove todos os filtros
+
+### Exportação de Dados 📥
+
+O dashboard oferece duas opções de exportação com filtros aplicados:
+
+- **Exportar CSV**: Gera arquivo CSV com os dados filtrados
+  - Formato universal compatível com Excel, Google Sheets, etc.
+  - Encoding UTF-8 com BOM para caracteres especiais
+  - Nome de arquivo inclui timestamp e filtros aplicados
+  
+- **Exportar Excel**: Gera arquivo .xlsx com múltiplas abas
+  - **Aba "Dados de Vendas"**: Todos os registros filtrados
+  - **Aba "Resumo"**: KPIs calculados (faturamento, lucro, ticket médio, etc.)
+  - **Aba "Informações"**: Detalhes dos filtros aplicados e data de geração
+  - Formatação preservada e pronta para análise
+
+**Como usar:**
+1. Aplique os filtros desejados (data e/ou região)
+2. Clique em "Exportar CSV" ou "Exportar Excel"
+3. O arquivo será baixado automaticamente com nome descritivo
+4. Exemplo: `relatorio_vendas_20260108_143025_2024-01-01_ate_2024-12-31_sudeste.xlsx`
 
 ### Impressão
 

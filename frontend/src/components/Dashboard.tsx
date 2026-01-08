@@ -1,9 +1,10 @@
-import { BarChart3, TrendingUp, Package, Users, CreditCard, Truck, Upload, Printer } from "lucide-react";
+import { BarChart3, TrendingUp, Package, Users, CreditCard, Truck, Upload, Printer, FileSpreadsheet, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SalesRecord } from "@/types/sales";
 import { useSalesData } from "@/hooks/useSalesData";
 import { useFilteredSalesData } from "@/hooks/useFilteredSalesData";
 import { useApiReport } from "@/hooks/useApiReport";
+import { useExportReport } from "@/hooks/useExportReport";
 import { OverviewTab } from "./dashboard/OverviewTab";
 import { SalesTab } from "./dashboard/SalesTab";
 import { ProductsTab } from "./dashboard/ProductsTab";
@@ -36,6 +37,9 @@ export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) =
   
   // Dados da API (quando disponível)
   const apiData = useApiReport(startDate || undefined, endDate || undefined, selectedRegion || undefined);
+  
+  // Hook de exportação
+  const { exportCSV, exportExcel, isExporting, error: exportError } = useExportReport();
   
   // Determinar se há filtro ativo (data ou região)
   const hasDateFilter = startDate || endDate;
@@ -170,6 +174,30 @@ export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) =
     }, 200);
   };
 
+  const handleExportCSV = async () => {
+    try {
+      await exportCSV({
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
+        region: selectedRegion || undefined,
+      });
+    } catch (error) {
+      console.error('Erro ao exportar CSV:', error);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      await exportExcel({
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
+        region: selectedRegion || undefined,
+      });
+    } catch (error) {
+      console.error('Erro ao exportar Excel:', error);
+    }
+  };
+
   const tabs = [
     { id: "overview", label: "Visão Geral", icon: BarChart3 },
     { id: "sales", label: "Vendas", icon: TrendingUp },
@@ -218,6 +246,24 @@ export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) =
         </div>
         <div className="flex items-center gap-3 no-print">
           <button
+            onClick={handleExportCSV}
+            disabled={isExporting}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 disabled:bg-gray-400 transition-colors text-sm font-medium text-white"
+            title="Exportar para CSV"
+          >
+            <FileText className="w-4 h-4" />
+            {isExporting ? "Exportando..." : "Exportar CSV"}
+          </button>
+          <button
+            onClick={handleExportExcel}
+            disabled={isExporting}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 transition-colors text-sm font-medium text-white"
+            title="Exportar para Excel"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            {isExporting ? "Exportando..." : "Exportar Excel"}
+          </button>
+          <button
             onClick={handlePrint}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent hover:bg-accent/80 transition-colors text-sm font-medium text-accent-foreground"
             title="Imprimir relatório"
@@ -235,6 +281,14 @@ export const Dashboard = ({ data, onReset, initialDateRange }: DashboardProps) =
           </button>
         </div>
       </header>
+
+      {/* Error Alert for Export */}
+      {exportError && (
+        <div className="mb-4 p-4 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-200 rounded-lg no-print">
+          <p className="font-semibold">Erro na exportação:</p>
+          <p>{exportError}</p>
+        </div>
+      )}
 
       {/* Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">

@@ -2,7 +2,7 @@
 
 ## 📊 Visão Geral Consolidada
 
-Documentação do Hanami Analytics está **100% completa** com 11 arquivos principais.
+Documentação do Hanami Analytics está **100% completa** com 12 arquivos principais.
 
 ---
 
@@ -15,6 +15,7 @@ Documentação do Hanami Analytics está **100% completa** com 11 arquivos princ
 | Começar rápido | [QUICK_START.md](./QUICK_START.md) | 5 min |
 | Instalar completo | [INSTALLATION.md](./INSTALLATION.md) | 15 min |
 | Usar a API | [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) | 30 min |
+| Exportar relatórios | [EXPORT_GUIDE.md](./EXPORT_GUIDE.md) | 10 min |
 | Testar com Swagger | [SWAGGER_GUIDE.md](./SWAGGER_GUIDE.md) | 10 min |
 | Entender arquitetura | [ARCHITECTURE.md](./ARCHITECTURE.md) | 30 min |
 | Desenvolver frontend | [FRONTEND_DOCUMENTATION.md](./FRONTEND_DOCUMENTATION.md) | 45 min |
@@ -34,6 +35,7 @@ Documentação do Hanami Analytics está **100% completa** com 11 arquivos princ
 - ✅ 6 Dashboards (Visão Geral, Vendas, Produtos, Clientes, Pagamentos, Logística)
 - ✅ 15+ Gráficos (Área, Barras, Pizza)
 - ✅ Sistema de Filtros (Data, Região, Atalhos)
+- ✅ Exportação CSV/Excel com filtros
 - ✅ Tema Escuro/Claro
 - ✅ Impressão em PDF
 - ✅ Upload de CSV/XLSX
@@ -41,7 +43,8 @@ Documentação do Hanami Analytics está **100% completa** com 11 arquivos princ
 - ✅ Responsividade (Ultrawide otimizado)
 
 #### Backend
-- ✅ 13+ Endpoints REST
+- ✅ 15+ Endpoints REST
+- ✅ Exportação CSV/Excel com filtros
 - ✅ Validação de Dados (7 etapas)
 - ✅ Quality Scoring (0-100%)
 - ✅ Logging estruturado

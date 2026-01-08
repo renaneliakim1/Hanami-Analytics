@@ -715,6 +715,101 @@ Para uploads, também inclui `validation_report`:
 
 ---
 
+## � Exportação
+
+### `GET /export/csv`
+
+Exporta dados de vendas em formato CSV com filtros opcionais.
+
+**Parameters:**
+- `start_date` (query, optional) - Data inicial (formato: YYYY-MM-DD)
+- `end_date` (query, optional) - Data final (formato: YYYY-MM-DD)
+- `region` (query, optional) - Região (Norte, Nordeste, Sul, Sudeste, Centro-Oeste)
+
+**Request:**
+```bash
+# Sem filtros
+curl -O "http://localhost:8000/export/csv"
+
+# Com filtro de data
+curl -O "http://localhost:8000/export/csv?start_date=2024-01-01&end_date=2024-12-31"
+
+# Com filtro de região
+curl -O "http://localhost:8000/export/csv?region=Sudeste"
+
+# Com ambos os filtros
+curl -O "http://localhost:8000/export/csv?start_date=2024-01-01&end_date=2024-12-31&region=Sul"
+```
+
+**Response 200 (Success):**
+- Content-Type: `text/csv; charset=utf-8`
+- Content-Disposition: `attachment; filename=relatorio_vendas_[timestamp]_[filtros].csv`
+- Arquivo CSV com encoding UTF-8 BOM
+
+**Response 404:**
+```json
+{
+  "detail": "Nenhum dado encontrado com os filtros aplicados"
+}
+```
+
+---
+
+### `GET /export/excel`
+
+Exporta dados de vendas em formato Excel (.xlsx) com múltiplas abas.
+
+**Parameters:**
+- `start_date` (query, optional) - Data inicial (formato: YYYY-MM-DD)
+- `end_date` (query, optional) - Data final (formato: YYYY-MM-DD)
+- `region` (query, optional) - Região (Norte, Nordeste, Sul, Sudeste, Centro-Oeste)
+
+**Request:**
+```bash
+# Sem filtros
+curl -O "http://localhost:8000/export/excel"
+
+# Com filtros
+curl -O "http://localhost:8000/export/excel?start_date=2024-01-01&end_date=2024-12-31&region=Nordeste"
+```
+
+**Response 200 (Success):**
+- Content-Type: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+- Content-Disposition: `attachment; filename=relatorio_vendas_[timestamp]_[filtros].xlsx`
+- Arquivo Excel com 3 abas:
+  - **Dados de Vendas**: Registros completos filtrados
+  - **Resumo**: KPIs calculados (total vendas, faturamento, lucro, ticket médio, clientes únicos)
+  - **Informações**: Metadados (filtros aplicados, total registros, data/hora geração)
+
+**Response 404:**
+```json
+{
+  "detail": "Nenhum dado encontrado com os filtros aplicados"
+}
+```
+
+**Estrutura das Abas do Excel:**
+
+Aba "Resumo":
+| Métrica | Valor |
+|---------|-------|
+| Total de Vendas | 9850 |
+| Faturamento Total | R$ 2.450.378,00 |
+| Lucro Total | R$ 856.789,50 |
+| Ticket Médio | R$ 248,76 |
+| Clientes Únicos | 3247 |
+
+Aba "Informações":
+| Filtro | Valor |
+|--------|-------|
+| Data Inicial | 2024-01-01 |
+| Data Final | 2024-12-31 |
+| Região | Sudeste |
+| Total de Registros | 9850 |
+| Data de Geração | 08/01/2026 14:30:25 |
+
+---
+
 ## 🚀 Exemplos de Uso
 
 ### Python
@@ -734,6 +829,21 @@ params = {
 }
 response = requests.get('http://localhost:8000/kpis', params=params)
 kpis = response.json()
+
+# Exportar CSV
+params = {
+    'start_date': '2024-01-01',
+    'end_date': '2024-12-31',
+    'region': 'Sudeste'
+}
+response = requests.get('http://localhost:8000/export/csv', params=params)
+with open('relatorio.csv', 'wb') as f:
+    f.write(response.content)
+
+# Exportar Excel
+response = requests.get('http://localhost:8000/export/excel', params=params)
+with open('relatorio.xlsx', 'wb') as f:
+    f.write(response.content)
 ```
 
 ### JavaScript
@@ -756,8 +866,24 @@ const params = new URLSearchParams({
 });
 const response = await fetch(`http://localhost:8000/kpis?${params}`);
 const kpis = await response.json();
+
+// Exportar CSV
+const exportParams = new URLSearchParams({
+  start_date: '2024-01-01',
+  end_date: '2024-12-31',
+  region: 'Sudeste'
+});
+const csvResponse = await fetch(`http://localhost:8000/export/csv?${exportParams}`);
+const csvBlob = await csvResponse.blob();
+const url = window.URL.createObjectURL(csvBlob);
+const a = document.createElement('a');
+a.href = url;
+a.download = 'relatorio.csv';
+a.click();
 ```
 
 ---
 
-**Última atualização**: 6 de janeiro de 2026
+**Para mais detalhes sobre exportação, consulte**: [EXPORT_GUIDE.md](./EXPORT_GUIDE.md)
+
+**Última atualização**: 8 de janeiro de 2026

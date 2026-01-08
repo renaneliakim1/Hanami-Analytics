@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 import pandas as pd
 from typing import List, Dict, Optional
 import os
@@ -681,6 +682,200 @@ async def get_report_detailed(start_date: Optional[str] = Query(None), end_date:
     }
     
     return report
+
+# ============================================================================
+# ENDPOINTS DE EXPORTAÇÃO
+# ============================================================================
+
+def filter_data_by_region(data: pd.DataFrame, region: Optional[str] = None) -> pd.DataFrame:
+    """Filtra dados por região"""
+    if not region or data.empty or 'regiao' not in data.columns:
+        return data
+    
+    try:
+        region_mapping = {
+            'norte': 'Norte',
+            'nordeste': 'Nordeste',
+            'centro-oeste': 'Centro-Oeste',
+            'sudeste': 'Sudeste',
+            'sul': 'Sul'
+        }
+        
+        region_normalized = region_mapping.get(region.lower(), region)
+        df = data[data['regiao'].str.lower() == region_normalized.lower()]
+        logger.debug(f"Filtro de região aplicado: {region_normalized} ({len(df)} registros)")
+        return df
+    except Exception as e:
+        logger.error(f"Erro ao filtrar por região: {e}", exc_info=True)
+        return data
+
+@app.get("/export/csv")
+async def export_csv(
+    start_date: Optional[str] = Query(None, description="Data inicial no formato YYYY-MM-DD"),
+    end_date: Optional[str] = Query(None, description="Data final no formato YYYY-MM-DD"),
+    region: Optional[str] = Query(None, description="Região para filtrar (Norte, Nordeste, Sul, Sudeste, Centro-Oeste)")
+):
+    """
+    Exporta dados de vendas em formato CSV com filtros opcionais
+    
+    Parâmetros:
+    - start_date: Data inicial (formato: YYYY-MM-DD)
+    - end_date: Data final (formato: YYYY-MM-DD)
+    - region: Região específica
+    
+    Retorna arquivo CSV para download
+    """
+    try:
+        data = get_current_data()
+        
+        if data.empty:
+            raise HTTPException(status_code=404, detail="Nenhum dado disponível para exportação")
+        
+        # Aplicar filtros
+        filtered_data = filter_data_by_date(data, start_date, end_date)
+        filtered_data = filter_data_by_region(filtered_data, region)
+        
+        if filtered_data.empty:
+            raise HTTPException(status_code=404, detail="Nenhum dado encontrado com os filtros aplicados")
+        
+        # Gerar nome do arquivo com timestamp e filtros
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename_parts = ["relatorio_vendas", timestamp]
+        
+        if start_date or end_date:
+            date_range = f"{start_date or 'inicio'}_ate_{end_date or 'fim'}"
+            filename_parts.append(date_range)
+        
+        if region:
+            filename_parts.append(region.lower().replace('-', '_'))
+        
+        filename = "_".join(filename_parts) + ".csv"
+        
+        # Converter para CSV
+        output = BytesIO()
+        filtered_data.to_csv(output, index=False, encoding='utf-8-sig')
+        output.seek(0)
+        
+        logger.info(f"✅ Exportação CSV gerada: {filename} ({len(filtered_data)} registros)")
+        
+        return StreamingResponse(
+            output,
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}",
+                "Content-Type": "text/csv; charset=utf-8"
+            }
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Erro ao exportar CSV: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao gerar exportação CSV: {str(e)}")
+
+@app.get("/export/excel")
+async def export_excel(
+    start_date: Optional[str] = Query(None, description="Data inicial no formato YYYY-MM-DD"),
+    end_date: Optional[str] = Query(None, description="Data final no formato YYYY-MM-DD"),
+    region: Optional[str] = Query(None, description="Região para filtrar (Norte, Nordeste, Sul, Sudeste, Centro-Oeste)")
+):
+    """
+    Exporta dados de vendas em formato Excel (.xlsx) com filtros opcionais
+    
+    Parâmetros:
+    - start_date: Data inicial (formato: YYYY-MM-DD)
+    - end_date: Data final (formato: YYYY-MM-DD)
+    - region: Região específica
+    
+    Retorna arquivo Excel para download
+    """
+    try:
+        data = get_current_data()
+        
+        if data.empty:
+            raise HTTPException(status_code=404, detail="Nenhum dado disponível para exportação")
+        
+        # Aplicar filtros
+        filtered_data = filter_data_by_date(data, start_date, end_date)
+        filtered_data = filter_data_by_region(filtered_data, region)
+        
+        if filtered_data.empty:
+            raise HTTPException(status_code=404, detail="Nenhum dado encontrado com os filtros aplicados")
+        
+        # Gerar nome do arquivo com timestamp e filtros
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename_parts = ["relatorio_vendas", timestamp]
+        
+        if start_date or end_date:
+            date_range = f"{start_date or 'inicio'}_ate_{end_date or 'fim'}"
+            filename_parts.append(date_range)
+        
+        if region:
+            filename_parts.append(region.lower().replace('-', '_'))
+        
+        filename = "_".join(filename_parts) + ".xlsx"
+        
+        # Converter para Excel
+        output = BytesIO()
+        
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            # Aba principal com dados
+            filtered_data.to_excel(writer, sheet_name='Dados de Vendas', index=False)
+            
+            # Aba com resumo (KPIs)
+            if 'valor_final' in filtered_data.columns:
+                summary_data = {
+                    'Métrica': [
+                        'Total de Vendas',
+                        'Faturamento Total',
+                        'Lucro Total',
+                        'Ticket Médio',
+                        'Clientes Únicos'
+                    ],
+                    'Valor': [
+                        len(filtered_data),
+                        f"R$ {filtered_data['valor_final'].sum():,.2f}" if 'valor_final' in filtered_data.columns else 'N/A',
+                        f"R$ {filtered_data['lucro'].sum():,.2f}" if 'lucro' in filtered_data.columns else 'N/A',
+                        f"R$ {filtered_data['valor_final'].mean():,.2f}" if 'valor_final' in filtered_data.columns else 'N/A',
+                        filtered_data['id_cliente'].nunique() if 'id_cliente' in filtered_data.columns else 'N/A'
+                    ]
+                }
+                
+                summary_df = pd.DataFrame(summary_data)
+                summary_df.to_excel(writer, sheet_name='Resumo', index=False)
+            
+            # Aba com informações de filtros
+            filter_info = {
+                'Filtro': ['Data Inicial', 'Data Final', 'Região', 'Total de Registros', 'Data de Geração'],
+                'Valor': [
+                    start_date or 'Não aplicado',
+                    end_date or 'Não aplicado',
+                    region or 'Todas as regiões',
+                    len(filtered_data),
+                    datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                ]
+            }
+            filter_df = pd.DataFrame(filter_info)
+            filter_df.to_excel(writer, sheet_name='Informações', index=False)
+        
+        output.seek(0)
+        
+        logger.info(f"✅ Exportação Excel gerada: {filename} ({len(filtered_data)} registros)")
+        
+        return StreamingResponse(
+            output,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}",
+                "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Erro ao exportar Excel: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao gerar exportação Excel: {str(e)}")
 
 
 if __name__ == "__main__":
