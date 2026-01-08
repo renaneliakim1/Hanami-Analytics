@@ -232,6 +232,141 @@ Analisa distribuição e valor médio por forma de pagamento
 ]
 ```
 
+#### `GET /customers-by-age`
+**Algoritmo de Segmentação por Faixa Etária**
+
+Distribui clientes por faixa etária (< 18, 18-25, 25-35, 35-45, 45-55, 55-65, > 65)
+
+**Resposta:**
+```json
+[
+  {
+    "name": "25-35",
+    "value": 2500
+  },
+  {
+    "name": "35-45",
+    "value": 2200
+  }
+]
+```
+
+#### `GET /installments`
+**Algoritmo de Análise de Parcelamento**
+
+Agrupa vendas por número de parcelas
+
+**Resposta:**
+```json
+[
+  {
+    "name": 1,
+    "quantidade": 4500,
+    "value": 450000.00
+  },
+  {
+    "name": 12,
+    "quantidade": 3200,
+    "value": 320000.00
+  }
+]
+```
+
+#### `GET /delivery-status`
+**Algoritmo de Análise Logística**
+
+Analisa distribuição de status de entrega
+
+**Resposta:**
+```json
+[
+  {
+    "name": "Entregue",
+    "value": 8500
+  },
+  {
+    "name": "Pendente",
+    "value": 1200
+  },
+  {
+    "name": "Enviado",
+    "value": 300
+  }
+]
+```
+
+#### `GET /product-ratings`
+**Algoritmo de Análise de Qualidade**
+
+Retorna produtos com menor avaliação (apenas produtos com 2+ avaliações)
+
+Query Parameters:
+- `limit: int` (default: 10) - Top N produtos com menor avaliação
+
+**Resposta:**
+```json
+[
+  {
+    "name": "Produto X",
+    "avaliacao": 2.5
+  },
+  {
+    "name": "Produto Y",
+    "avaliacao": 3.1
+  }
+]
+```
+
+#### `GET /average-delivery-time`
+**Algoritmo de Análise Logística**
+
+Retorna tempo médio de entrega em dias
+
+**Resposta:**
+```json
+{
+  "tempo_medio": 5.7
+}
+```
+
+---
+
+### Exportação de Dados
+
+#### `GET /export/csv`
+**Exportação de Dados em CSV**
+
+Exporta os dados atuais em formato CSV. Suporta filtros de data.
+
+Query Parameters:
+- `start_date: string` (optional) - Data inicial (YYYY-MM-DD)
+- `end_date: string` (optional) - Data final (YYYY-MM-DD)
+- `region: string` (optional) - Filtro por região
+
+**Resposta:**
+- Download de arquivo CSV com todos os dados
+
+#### `GET /export/excel`
+**Exportação de Dados em Excel**
+
+Exporta os dados atuais em formato Excel com múltiplas abas. Suporta filtros de data.
+
+Query Parameters:
+- `start_date: string` (optional) - Data inicial (YYYY-MM-DD)
+- `end_date: string` (optional) - Data final (YYYY-MM-DD)
+- `region: string` (optional) - Filtro por região
+
+**Resposta:**
+- Download de arquivo Excel com planilhas:
+  - Dados Brutos
+  - KPIs
+  - Vendas por Mês
+  - Vendas por Categoria
+  - Produtos Top
+  - Clientes por Gênero
+  - Vendas por Estado
+  - Formas de Pagamento
+
 ---
 
 ### Relatórios
@@ -344,7 +479,7 @@ Todos os endpoints detectam automaticamente as colunas disponíveis, permitindo 
 
 - FastAPI 0.115.5
 - Pandas 2.2.3
-- Openpyxl 3.11.0
+- Openpyxl 3.1.5
 - Python-multipart 0.0.18
 
 ---

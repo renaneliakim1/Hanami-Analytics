@@ -2,7 +2,7 @@
 
 ## 📊 Visão Geral Consolidada
 
-Documentação do Hanami Analytics está **100% completa** com 15 arquivos principais, incluindo guias de responsividade mobile e correções de bugs.
+Documentação do Hanami Analytics está **100% completa** e **unificada** com 18 arquivos principais, eliminando duplicação e reduzindo confusão.
 
 ---
 
@@ -13,17 +13,17 @@ Documentação do Hanami Analytics está **100% completa** com 15 arquivos princ
 | Necessidade | Documento | Tempo |
 |-----------|-----------|-------|
 | Começar rápido | [QUICK_START.md](./QUICK_START.md) | 5 min |
+| Instalar API | [API_SETUP.md](./API_SETUP.md) | 15 min |
+| Documentação API | [API_BACKEND_DOCUMENTATION.md](./API_BACKEND_DOCUMENTATION.md) | 30 min |
+| Arquitetura API | [ARCHITECTURE_BACKEND.md](./ARCHITECTURE_BACKEND.md) | 30 min |
 | Instalar completo | [INSTALLATION.md](./INSTALLATION.md) | 15 min |
-| Usar a API | [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) | 30 min |
 | Exportar relatórios | [EXPORT_GUIDE.md](./EXPORT_GUIDE.md) | 10 min |
 | Testar com Swagger | [SWAGGER_GUIDE.md](./SWAGGER_GUIDE.md) | 10 min |
-| Entender arquitetura | [ARCHITECTURE.md](./ARCHITECTURE.md) | 30 min |
 | Desenvolver frontend | [FRONTEND_DOCUMENTATION.md](./FRONTEND_DOCUMENTATION.md) | 45 min |
 | Design responsivo | [RESPONSIVE_DESIGN.md](./RESPONSIVE_DESIGN.md) | 25 min |
 | Correções de bugs | [BUG_FIXES.md](./BUG_FIXES.md) | 20 min |
 | Validar dados | [DATA_VALIDATION.md](./DATA_VALIDATION.md) | 20 min |
 | Filtros avançados | [ARQUITETURA_FILTROS.md](./ARQUITETURA_FILTROS.md) | 15 min |
-| Resolver problema | [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) | 5-30 min |
 | Índice/Visão geral | Este arquivo | 5 min |
 
 ---

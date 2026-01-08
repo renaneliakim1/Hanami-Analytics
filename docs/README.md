@@ -35,8 +35,10 @@ Bem-vindo à documentação completa do Hanami Analytics! Este documento serve c
 
 | Documento | Descrição | Atualização |
 |-----------|-----------|-------------|
-| [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) | Endpoints, parâmetros, exemplos | ✅ Completo |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | Arquitetura técnica, fluxo de dados | ✅ Jan 2026 |
+| [API_DOCUMENTATION_INDEX.md](./API_DOCUMENTATION_INDEX.md) | 🌟 **COMECE AQUI** - Índice da documentação API | ✅ Jan 2026 |
+| [API_SETUP.md](./API_SETUP.md) | Instalação e setup da API | ✅ Jan 2026 |
+| [API_BACKEND_DOCUMENTATION.md](./API_BACKEND_DOCUMENTATION.md) | 19 Endpoints documentados (KPIs, análises, exportação) | ✅ Jan 2026 |
+| [ARCHITECTURE_BACKEND.md](./ARCHITECTURE_BACKEND.md) | Arquitetura API, algoritmos, fluxo de dados | ✅ Jan 2026 |
 | [DATA_VALIDATION.md](./DATA_VALIDATION.md) | Validação de dados, quality scoring | ✅ Completo |
 | [ARQUITETURA_FILTROS.md](./ARQUITETURA_FILTROS.md) | Sistema de filtros (data + região) | ✅ Completo |
 

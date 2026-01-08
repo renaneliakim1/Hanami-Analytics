@@ -44,8 +44,12 @@
 │  │  ├─ KPIs (faturamento, lucro, ticket médio)        │   │
 │  │  ├─ Análise Temporal (vendas por mês)              │   │
 │  │  ├─ Segmentação (categoria, gênero, estado)        │   │
+│  │  ├─ Análise Demográfica (faixa etária, gênero)    │   │
 │  │  ├─ Ranking (top produtos)                          │   │
-│  │  └─ Análise de Pagamentos                           │   │
+│  │  ├─ Análise de Pagamentos (parcelamento)            │   │
+│  │  ├─ Análise Logística (entrega, tempo)             │   │
+│  │  ├─ Análise de Qualidade (ratings de produtos)     │   │
+│  │  └─ Exportação (CSV, Excel)                         │   │
 │  └──────────────────────────────────────────────────────┘   │
 │                                                               │
 │  ┌──────────────────────────────────────────────────────┐   │
@@ -55,6 +59,10 @@
 │  │  ├─ GET /sales-by-month, /sales-by-category        │   │
 │  │  ├─ GET /top-products, /customers-by-gender        │   │
 │  │  ├─ GET /sales-by-state, /payment-methods          │   │
+│  │  ├─ GET /customers-by-age, /installments           │   │
+│  │  ├─ GET /delivery-status, /product-ratings         │   │
+│  │  ├─ GET /average-delivery-time                      │   │
+│  │  ├─ GET /export/csv, /export/excel                 │   │
 │  │  ├─ GET /reports/summary, /reports/detailed        │   │
 │  │  └─ DELETE /reset                                    │   │
 │  └──────────────────────────────────────────────────────┘   │
@@ -285,5 +293,3 @@ Alternativas para produção:
 - Banco de dados SQL
 - Redis
 - Compartilhamento de arquivos em disco
-
----
