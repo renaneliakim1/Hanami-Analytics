@@ -93,24 +93,25 @@ app = FastAPI(
 # CONFIGURAÇÃO DE CORS - Permitir Vercel e desenvolvimento local
 # ============================================================================
 
-# Origens permitidas
+# Origens permitidas (pode ser configurado via variável de ambiente)
+CORS_ORIGINS_ENV = os.getenv("CORS_ALLOWED_ORIGINS", "")
+
 allowed_origins = [
     "http://localhost:5173",      # Vite dev
     "http://localhost:3000",      # Outros locais
     "http://127.0.0.1:5173",      # Vite dev alternativo
     "https://hanami-analytics.vercel.app",  # Vercel production
-    "https://*.vercel.app",        # Outros deploys Vercel
 ]
 
-# Adicionar CORS oficial do FastAPI
-app.add_middleware(
-    FastAPICORSMiddleware,
-    allow_origins=["*"],  # Aceitar todas as origens por simplicidade
-    allow_credentials=True,
-    allow_methods=["*"],  # Permitir todos os métodos
-    allow_headers=["*"],  # Permitir todos os headers
-    expose_headers=["*"],
-)
+# Adicionar origens da variável de ambiente (separadas por vírgula)
+if CORS_ORIGINS_ENV:
+    allowed_origins.extend([origin.strip() for origin in CORS_ORIGINS_ENV.split(",")])
+
+logger.info(f"🔐 CORS configurado com {len(allowed_origins)} origens permitidas")
+logger.debug(f"   Origens: {allowed_origins}")
+
+# IMPORTANTE: NÃO usar CORSMiddleware do FastAPI pois o Railway sobrescreve
+# Usar apenas middleware customizado abaixo
 
 
 # ============================================================================
@@ -118,27 +119,44 @@ app.add_middleware(
 # ============================================================================
 
 class CustomCORSMiddleware(BaseHTTPMiddleware):
+    """Middleware CORS customizado que sobrescreve headers do Railway"""
+    
     async def dispatch(self, request, call_next):
         # Obter origem da requisição
-        origin = request.headers.get("origin", "*")
+        origin = request.headers.get("origin")
         
+        # Verificar se a origem é do Vercel (qualquer subdomínio)
+        is_vercel = origin and ".vercel.app" in origin
+        is_allowed = origin in allowed_origins or is_vercel
+        
+        # Definir o header de origem corretamente
+        allowed_origin = origin if is_allowed else "https://hanami-analytics.vercel.app"
+        
+        # Log para debug
+        logger.debug(f"🌐 CORS Request - Origin: {origin}, Allowed: {is_allowed}")
+        
+        # Responder a requisições OPTIONS (preflight)
         if request.method == "OPTIONS":
             return JSONResponse(
                 {"status": "ok"},
                 headers={
-                    "Access-Control-Allow-Origin": origin if origin else "*",
+                    "Access-Control-Allow-Origin": allowed_origin,
                     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
-                    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+                    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept",
                     "Access-Control-Allow-Credentials": "true",
                     "Access-Control-Max-Age": "86400",
                 }
             )
         
+        # Processar requisição normal
         response = await call_next(request)
-        response.headers["Access-Control-Allow-Origin"] = origin if origin else "*"
+        
+        # FORÇAR sobrescrita dos headers CORS (para substituir o Railway)
+        response.headers["Access-Control-Allow-Origin"] = allowed_origin
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept"
         response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Vary"] = "Origin"
         
         return response
 
