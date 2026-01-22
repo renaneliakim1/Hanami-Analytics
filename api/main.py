@@ -88,34 +88,15 @@ app = FastAPI(
     ]
 )
 
-# Configurar CORS - Permitir Vercel em produção
-@app.middleware("http")
-async def add_cors_header(request, call_next):
-    """Middleware para adicionar headers CORS corretos"""
-    response = await call_next(request)
-    
-    origin = request.headers.get('origin')
-    allowed_origins = [
-        "http://localhost:8081",
-        "http://localhost:8080", 
-        "http://localhost:3000", 
-        "http://localhost:5173",
-        "https://hanami-analytics.vercel.app",
-    ]
-    
-    if origin in allowed_origins or "vercel.app" in origin:
-        response.headers["Access-Control-Allow-Origin"] = origin
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-        response.headers["Access-Control-Allow-Credentials"] = "true"
-    
-    return response
+# Configurar CORS - Solução Nuclear (Temporária)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Aceita todas as origens
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Rota OPTIONS para preflight
-@app.options("/{full_path:path}")
-async def options_handler(full_path: str):
-    """Handler para requisições OPTIONS (preflight CORS)"""
-    return {"status": "ok"}
 
 
 # Armazenamento em memória para dados enviados
