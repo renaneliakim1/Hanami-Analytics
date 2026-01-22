@@ -196,6 +196,16 @@ Hanami-Analytics/
 
 ## 🔌 API REST
 
+### 🌐 CORS e Produção
+
+A API está configurada para funcionar com:
+- ✅ Desenvolvimento local (localhost:5173)
+- ✅ Produção Vercel (hanami-analytics.vercel.app)
+- ✅ Qualquer subdomínio .vercel.app
+- ✅ Configurável via variável `CORS_ALLOWED_ORIGINS`
+
+**Nota**: O Render não possui problemas de CORS como outras plataformas (Railway). A configuração atual funciona perfeitamente em produção.
+
 ### Endpoints Principais
 
 ```
@@ -332,9 +342,37 @@ O dashboard oferece duas opções de exportação com filtros aplicados:
 
 - Use o botão de sol/lua no topo para alternar entre temas claro/escuro
 
-## 🚀 Build para Produção
+## 🚀 Deploy em Produção
 
-### Frontend
+### 🌐 Aplicação Online
+
+- **Frontend (Vercel)**: https://hanami-analytics.vercel.app
+- **Backend API (Render)**: https://hanami-analytics-api.onrender.com
+- **Swagger Docs**: https://hanami-analytics-api.onrender.com/docs
+
+### 📦 Deploy Rápido (5 minutos)
+
+O projeto está 100% configurado para deploy gratuito:
+
+1. **Frontend (Vercel)**
+   - Conecte seu repositório GitHub ao Vercel
+   - Deploy automático
+   - Configure variáveis de ambiente:
+     ```
+     VITE_API_URL=https://hanami-analytics-api.onrender.com
+     VITE_API_TIMEOUT=30000
+     ```
+
+2. **Backend (Render)**
+   - Conecte seu repositório ao Render
+   - Render detecta automaticamente via `render.yaml`
+   - Build Command: `pip install -r api/requirements.txt`
+   - Start Command: `cd api && uvicorn main:app --host 0.0.0.0 --port $PORT`
+
+📖 **Guia completo**: [DEPLOY_RÁPIDO.md](DEPLOY_RÁPIDO.md)  
+📊 **Deploy em Produção**: [DEPLOY_PRODUCTION.md](DEPLOY_PRODUCTION.md)
+
+### 🏗️ Build Local
 
 ```bash
 cd frontend
@@ -342,16 +380,6 @@ npm run build
 ```
 
 Saída em: `frontend/dist/`
-
-### Deploy
-
-Pode ser feito em:
-- **Vercel** (recomendado para React)
-- **Netlify**
-- **GitHub Pages**
-- **Seu servidor próprio** (qualquer host de arquivos estáticos)
-
-O backend FastAPI pode ser deployado em qualquer servidor Python.
 
 ## 📝 Como Editar o Código
 
@@ -417,11 +445,22 @@ Para mais detalhes, consulte [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 
 ## 📚 Documentação Detalhada
 
-- [API Documentation](docs/API_DOCUMENTATION.md) - Endpoints e schemas
-- [Architecture](docs/ARCHITECTURE.md) - Estrutura técnica
-- [Installation Guide](docs/INSTALLATION.md) - Guia completo de instalação
-- [Data Validation](docs/DATA_VALIDATION.md) - Validação de dados
-- [Frontend Documentation](docs/FRONTEND_DOCUMENTATION.md) - Componentes React
+### 📖 Deploy e Produção
+- **[Deploy Rápido (5 min)](DEPLOY_RÁPIDO.md)** - Guia rápido de deploy
+- **[Deploy em Produção](DEPLOY_PRODUCTION.md)** - Configurações completas Render + Vercel
+
+### 🔧 API e Backend
+- **[API Documentation](docs/API_DOCUMENTATION.md)** - Endpoints e schemas
+- **[Architecture](docs/ARCHITECTURE.md)** - Estrutura técnica
+- **[Data Validation](docs/DATA_VALIDATION.md)** - Validação de dados
+
+### 💻 Frontend
+- **[Frontend Documentation](docs/FRONTEND_DOCUMENTATION.md)** - Componentes React
+- **[Responsive Design](docs/RESPONSIVE_DESIGN.md)** - Design responsivo
+
+### 🛠️ Instalação e Configuração
+- **[Installation Guide](docs/INSTALLATION.md)** - Guia completo de instalação
+- **[Quick Start](docs/QUICK_START.md)** - Início rápido
 
 ## 📄 Licença
 
