@@ -1,6 +1,5 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Query
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 import pandas as pd
 from typing import List, Dict, Optional
 import os
@@ -11,6 +10,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import sys
 from data_validator import validate_data, generate_validation_report
+from starlette.middleware.base import BaseHTTPMiddleware
 
 import logging
 from logging.handlers import RotatingFileHandler
@@ -88,15 +88,32 @@ app = FastAPI(
     ]
 )
 
-# Configurar CORS - Solução Nuclear (Temporária)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Aceita todas as origens
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# ============================================================================
+# CORS MIDDLEWARE CUSTOMIZADO - Força headers CORS
+# ============================================================================
 
+class CORSMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        if request.method == "OPTIONS":
+            return JSONResponse(
+                {"status": "ok"},
+                headers={
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+                    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+                    "Access-Control-Max-Age": "86400",
+                }
+            )
+        
+        response = await call_next(request)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
+        
+        return response
+
+# Adicionar middleware ANTES de qualquer outra coisa
+app.add_middleware(CORSMiddleware)
 
 
 # Armazenamento em memória para dados enviados
