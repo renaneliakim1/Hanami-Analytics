@@ -2,31 +2,13 @@
 
 Seu projeto está **100% pronto** para deploy gratuito!
 
-## 🔧 CORREÇÃO APLICADA - CORS Fix
+## � Deploy no Render (Melhor que Railway!)
 
-**Status:** ✅ Problema de CORS resolvido (2026-01-22)
-
-O erro `Access-Control-Allow-Origin blocked` foi corrigido:
-- ✅ Middleware CORS oficial do FastAPI implementado
-- ✅ Suporte para `allow_origins=["*"]`
-- ✅ Middleware customizado como fallback
-- ✅ Headers CORS corretos para Vercel + Railway
-
-**Para aplicar a correção:**
-```bash
-bash deploy_cors_fix.sh
-# OU manualmente:
-git add api/main.py docs/DEPLOY_CORS_FIX.md
-git commit -m "fix: corrigir CORS para Vercel + Railway"
-git push origin main
-```
-
-**Testar CORS após deploy:**
-```bash
-pwsh test_cors.ps1
-```
-
-📖 **Detalhes:** [docs/DEPLOY_CORS_FIX.md](docs/DEPLOY_CORS_FIX.md)
+**Por que Render?**
+- ✅ CORS funciona perfeitamente
+- ✅ Deploy nativo Python/FastAPI (sem Docker)
+- ✅ Build rápido e confiável
+- ✅ Free tier generoso
 
 ---
 
@@ -46,46 +28,76 @@ git push origin main
 - Deploy (automático!)
 - ✅ Seu app em: `https://hanami-analytics.vercel.app`
 
-### 3️⃣ **Railway** (2 min) - Backend
-- Acesse: https://railway.app
-- "Start New Project"
-- "Deploy from GitHub repo"
-- Selecione: `Hanami-Analytics`
-- Railway detecta Dockerfile automaticamente
-- Espere deploy (~5 min)
-- ✅ Sua API em: `https://hanami-analytics-prod-production.railway.app`
+### 3️⃣ **Render** (3 min) - Backend
 
-#### ⚙️ Configurações do Railway
+#### 📝 Criar Web Service
+1. Acesse: https://render.com
+2. Clique **"New +"** → **"Web Service"**
+3. Conecte seu GitHub e selecione `Hanami-Analytics`
+4. Configure:
 
-**Build:**
+**Configurações Básicas:**
 ```
-Builder: Dockerfile
-Dockerfile path: Dockerfile
-Start command: uvicorn main:app --host 0.0.0.0 --port $PORT
-Region: europe-west4-drams3a
-Replicas: 1
-Restart policy: on failure (max 10 retries)
+Name: hanami-analytics-api
+Environment: Python 3
+Branch: main
+Region: Frankfurt (ou mais próximo)
 ```
 
-**Variáveis de Ambiente (IMPORTANTE para CORS):**
+**Build & Deploy (IMPORTANTE - o requirements.txt está em api/):**
+```
+Build Command: pip install -r api/requirements.txt
+Start Command: cd api && uvicorn main:app --host 0.0.0.0 --port $PORT
+```
+
+**Plano:**
+```
+Instance Type: Free
+```
+
+5. Clique **"Create Web Service"**
+6. Aguarde build (~5 min)
+7. ✅ Copie a URL: `https://hanami-analytics-api.onrender.com`
+
+#### ⚙️ Variáveis de Ambiente (Opcional)
+No Render dashboard, vá em **Environment**:
 ```
 CORS_ALLOWED_ORIGINS=https://hanami-analytics.vercel.app
+PYTHON_VERSION=3.11
 ```
-💡 **Adicione esta variável em:** Railway → Seu Projeto → Variables → New Variable
 
 ## 🔗 Conectar Frontend ↔ Backend
 
-1. URL do Railway: `https://hanami-analytics-prod-production.railway.app`
+1. URL do Render: `https://hanami-analytics-api.onrender.com`
 2. Vai para Vercel → Settings → Environment Variables
-3. Variáveis configuradas:
+3. Edite/Adicione:
    ```
-   VITE_API_URL=https://hanami-analytics-prod-production.railway.app
+   VITE_API_URL=https://hanami-analytics-api.onrender.com
    VITE_API_TIMEOUT=30000
    ```
-4. Redeploy no Vercel
+4. **Redeploy** no Vercel (botão "Redeploy" no dashboard)
 
-**Pronto! ✅ Dashboard online!**
+**Pronto! ✅ Dashboard online sem erros de CORS!**
 
 ---
 
-📚 **Guia completo**: [DEPLOY_GRATIS_VERCEL_RAILWAY.md](./DEPLOY_GRATIS_VERCEL_RAILWAY.md)
+## 🧪 Testar
+
+1. Abra: https://hanami-analytics.vercel.app
+2. **F12** → **Console** (deve estar limpo, sem erros!)
+3. Faça upload de um CSV/XLSX
+4. ✅ Deve funcionar perfeitamente!
+
+---
+
+## 📚 Links Úteis
+
+- 📖 **Guia Completo Render**: [docs/DEPLOY_RENDER.md](docs/DEPLOY_RENDER.md)
+- 📖 **Guia Vercel**: [docs/DEPLOY_GRATIS_VERCEL_RAILWAY.md](docs/DEPLOY_GRATIS_VERCEL_RAILWAY.md)
+- 🔗 **Swagger API**: https://hanami-analytics-api.onrender.com/docs
+
+---
+
+## 💡 Dica: First Request
+
+O Render free tier "hiberna" após inatividade. O primeiro request pode levar ~30-60 segundos. Depois fica rápido!

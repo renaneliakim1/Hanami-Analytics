@@ -7,3 +7,5 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://hanami-analytics.vercel.app
