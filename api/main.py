@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Query
 from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware as FastAPICORSMiddleware
 import pandas as pd
 from typing import List, Dict, Optional
 import os
@@ -89,31 +90,60 @@ app = FastAPI(
 )
 
 # ============================================================================
-# CORS MIDDLEWARE CUSTOMIZADO - Força headers CORS
+# CONFIGURAÇÃO DE CORS - Permitir Vercel e desenvolvimento local
 # ============================================================================
 
-class CORSMiddleware(BaseHTTPMiddleware):
+# Origens permitidas
+allowed_origins = [
+    "http://localhost:5173",      # Vite dev
+    "http://localhost:3000",      # Outros locais
+    "http://127.0.0.1:5173",      # Vite dev alternativo
+    "https://hanami-analytics.vercel.app",  # Vercel production
+    "https://*.vercel.app",        # Outros deploys Vercel
+]
+
+# Adicionar CORS oficial do FastAPI
+app.add_middleware(
+    FastAPICORSMiddleware,
+    allow_origins=["*"],  # Aceitar todas as origens por simplicidade
+    allow_credentials=True,
+    allow_methods=["*"],  # Permitir todos os métodos
+    allow_headers=["*"],  # Permitir todos os headers
+    expose_headers=["*"],
+)
+
+
+# ============================================================================
+# CORS MIDDLEWARE CUSTOMIZADO ADICIONAL (Fallback)
+# ============================================================================
+
+class CustomCORSMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
+        # Obter origem da requisição
+        origin = request.headers.get("origin", "*")
+        
         if request.method == "OPTIONS":
             return JSONResponse(
                 {"status": "ok"},
                 headers={
-                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Origin": origin if origin else "*",
                     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
                     "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+                    "Access-Control-Allow-Credentials": "true",
                     "Access-Control-Max-Age": "86400",
                 }
             )
         
         response = await call_next(request)
-        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Origin"] = origin if origin else "*"
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
         response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
         
         return response
 
-# Adicionar middleware ANTES de qualquer outra coisa
-app.add_middleware(CORSMiddleware)
+# Adicionar middleware customizado como fallback
+app.add_middleware(CustomCORSMiddleware)
 
 
 # Armazenamento em memória para dados enviados
