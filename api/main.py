@@ -89,16 +89,18 @@ app = FastAPI(
 )
 
 # Configurar CORS
+origins = [
+    "http://localhost:8081",
+    "http://localhost:8080", 
+    "http://localhost:3000", 
+    "http://localhost:5173",
+    "https://hanami-analytics.vercel.app",
+    "https://vercel.app",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:8081",
-        "http://localhost:8080", 
-        "http://localhost:3000", 
-        "http://localhost:5173",
-        "https://hanami-analytics.vercel.app",  # Production Vercel
-        "https://*.vercel.app",  # Todos os deploys do Vercel
-    ],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
