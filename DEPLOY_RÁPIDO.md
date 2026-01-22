@@ -53,15 +53,34 @@ git push origin main
 - Selecione: `Hanami-Analytics`
 - Railway detecta Dockerfile automaticamente
 - Espere deploy (~5 min)
-- ✅ Sua API em: `https://seu-backend.railway.app`
+- ✅ Sua API em: `https://hanami-analytics-prod-production.railway.app`
+
+#### ⚙️ Configurações do Railway
+
+**Build:**
+```
+Builder: Dockerfile
+Dockerfile path: Dockerfile
+Start command: uvicorn main:app --host 0.0.0.0 --port $PORT
+Region: europe-west4-drams3a
+Replicas: 1
+Restart policy: on failure (max 10 retries)
+```
+
+**Variáveis de Ambiente (IMPORTANTE para CORS):**
+```
+CORS_ALLOWED_ORIGINS=https://hanami-analytics.vercel.app
+```
+💡 **Adicione esta variável em:** Railway → Seu Projeto → Variables → New Variable
 
 ## 🔗 Conectar Frontend ↔ Backend
 
-1. Copie URL do Railway
+1. URL do Railway: `https://hanami-analytics-prod-production.railway.app`
 2. Vai para Vercel → Settings → Environment Variables
-3. Adicione:
+3. Variáveis configuradas:
    ```
-   VITE_API_URL=https://seu-backend-railway.app
+   VITE_API_URL=https://hanami-analytics-prod-production.railway.app
+   VITE_API_TIMEOUT=30000
    ```
 4. Redeploy no Vercel
 
