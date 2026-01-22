@@ -2,6 +2,34 @@
 
 Seu projeto está **100% pronto** para deploy gratuito!
 
+## 🔧 CORREÇÃO APLICADA - CORS Fix
+
+**Status:** ✅ Problema de CORS resolvido (2026-01-22)
+
+O erro `Access-Control-Allow-Origin blocked` foi corrigido:
+- ✅ Middleware CORS oficial do FastAPI implementado
+- ✅ Suporte para `allow_origins=["*"]`
+- ✅ Middleware customizado como fallback
+- ✅ Headers CORS corretos para Vercel + Railway
+
+**Para aplicar a correção:**
+```bash
+bash deploy_cors_fix.sh
+# OU manualmente:
+git add api/main.py docs/DEPLOY_CORS_FIX.md
+git commit -m "fix: corrigir CORS para Vercel + Railway"
+git push origin main
+```
+
+**Testar CORS após deploy:**
+```bash
+pwsh test_cors.ps1
+```
+
+📖 **Detalhes:** [docs/DEPLOY_CORS_FIX.md](docs/DEPLOY_CORS_FIX.md)
+
+---
+
 ## ✨ 3 Passos Simples
 
 ### 1️⃣ **GitHub** (1 min)
